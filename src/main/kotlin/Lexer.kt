@@ -32,6 +32,7 @@ class Lexer(private val input: String) {
                 } else {
                     Token(TokenType.ILLEGAL, ch.toString())
                 }
+                return tok
             }
         }
 

@@ -1,6 +1,8 @@
 package org.example
 
-data class Token(val tokenType: TokenType, val literal: String)
+data class Token(val tokenType: TokenType, val literal: String) {
+    constructor(tokenType: TokenType) : this(tokenType, tokenType.token)
+}
 
 enum class TokenType(val token: String) {
     ILLEGAL("ILLEGAL"),
@@ -13,6 +15,16 @@ enum class TokenType(val token: String) {
     // Operators
     ASSIGN("="),
     PLUS("+"),
+    MINUS("-"),
+    BANG("!"),
+    ASTERISK("*"),
+    SLASH("/"),
+
+    LT("<"),
+    GT(">"),
+
+    EQ("=="),
+    NOT_EQ("!="),
 
     // Delimiters
     COMMA(","),
@@ -24,6 +36,26 @@ enum class TokenType(val token: String) {
     RBRACE("}"),
 
     // Keywords
-    FUNCTION("FUNCTION"),
-    LET("LET")
+    FUNCTION("fn"),
+    LET("let"),
+    TRUE("true"),
+    FALSE("false"),
+    IF("if"),
+    ELSE("else"),
+    RETURN("return");
+
+    companion object {
+        fun findTokenType(literal: String): TokenType {
+            return when (literal) {
+                "fn" -> FUNCTION
+                "let" -> LET
+                "true" -> TRUE
+                "false" -> FALSE
+                "if" -> IF
+                "else" -> ELSE
+                "return" -> RETURN
+                else -> IDENT
+            }
+        }
+    }
 }

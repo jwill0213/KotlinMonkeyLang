@@ -15,22 +15,42 @@ class Lexer(private val input: String) {
         skipWhitespace()
 
         when (ch) {
-            '=' -> tok = Token(TokenType.ASSIGN, ch.toString())
-            ';' -> tok = Token(TokenType.SEMICOLON, ch.toString())
-            '(' -> tok = Token(TokenType.LPAREN, ch.toString())
-            ')' -> tok = Token(TokenType.RPAREN, ch.toString())
-            ',' -> tok = Token(TokenType.COMMA, ch.toString())
-            '+' -> tok = Token(TokenType.PLUS, ch.toString())
-            '{' -> tok = Token(TokenType.LBRACE, ch.toString())
-            '}' -> tok = Token(TokenType.RBRACE, ch.toString())
-            null -> tok = Token(TokenType.EOF, "")
+            '=' -> {
+                tok = if (peekChar() == '=') {
+                    readChar()
+                    Token(TokenType.EQ)
+                } else {
+                    Token(TokenType.ASSIGN)
+                }
+            }
+            ';' -> tok = Token(TokenType.SEMICOLON)
+            '(' -> tok = Token(TokenType.LPAREN)
+            ')' -> tok = Token(TokenType.RPAREN)
+            ',' -> tok = Token(TokenType.COMMA)
+            '+' -> tok = Token(TokenType.PLUS)
+            '{' -> tok = Token(TokenType.LBRACE)
+            '}' -> tok = Token(TokenType.RBRACE)
+            '-' -> tok = Token(TokenType.MINUS)
+            '!' -> {
+                tok = if (peekChar() == '=') {
+                    readChar()
+                    Token(TokenType.NOT_EQ)
+                } else {
+                    Token(TokenType.BANG)
+                }
+            }
+            '*' -> tok = Token(TokenType.ASTERISK)
+            '/' -> tok = Token(TokenType.SLASH)
+            '<' -> tok = Token(TokenType.LT)
+            '>' -> tok = Token(TokenType.GT)
+            null -> tok = Token(TokenType.EOF)
             else -> {
                 tok = if (ch!!.isLetter()) {
                     readIdentifier()
                 } else if (ch!!.isDigit()) {
                     readNumber()
                 } else {
-                    Token(TokenType.ILLEGAL, ch.toString())
+                    Token(TokenType.ILLEGAL)
                 }
                 return tok
             }
@@ -38,28 +58,6 @@ class Lexer(private val input: String) {
 
         readChar()
         return tok
-    }
-
-    private fun readIdentifier(): Token {
-        val identStart = position
-        while(ch!!.isLetter()) {
-            readChar()
-        }
-
-        return when (val literal = input.substring(identStart, position)) {
-            "fn" -> Token(TokenType.FUNCTION, literal)
-            "let" -> Token(TokenType.LET, literal)
-            else -> Token(TokenType.IDENT, literal)
-        }
-    }
-
-    private fun readNumber(): Token {
-        val numberStart = position
-        while(ch!!.isDigit()) {
-            readChar()
-        }
-
-        return Token(TokenType.INT, input.substring(numberStart, position))
     }
 
     private fun readChar() {
@@ -70,6 +68,34 @@ class Lexer(private val input: String) {
         }
         position = readPosition
         readPosition += 1
+    }
+
+    private fun peekChar(): Char? {
+        return if (readPosition >= input.length) {
+            null
+        } else {
+            input[readPosition]
+        }
+    }
+
+    private fun readIdentifier(): Token {
+        val identStart = position
+        while(ch?.isLetter() == true) {
+            readChar()
+        }
+
+        val literal = input.substring(identStart, position)
+
+        return Token(TokenType.findTokenType(literal), literal)
+    }
+
+    private fun readNumber(): Token {
+        val numberStart = position
+        while(ch?.isDigit() == true) {
+            readChar()
+        }
+
+        return Token(TokenType.INT, input.substring(numberStart, position))
     }
 
     private fun skipWhitespace() {

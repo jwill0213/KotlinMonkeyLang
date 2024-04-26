@@ -34,6 +34,6 @@ class ParserTest {
         assertTrue(statement is LetStatement)
         val letStatement: LetStatement = statement as LetStatement
         assertEquals(statement.getTokenLiteral(), "let")
-        assertEquals(letStatement.name.getTokenLiteral(), name)
+        assertEquals(letStatement.name?.getTokenLiteral(), name)
     }
 }

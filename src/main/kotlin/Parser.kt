@@ -3,11 +3,13 @@ package org.example
 import org.example.ast.Program
 import org.example.ast.expressions.Identifier
 import org.example.ast.statements.LetStatement
+import org.example.ast.statements.ReturnStatement
 import org.example.ast.statements.Statement
 
 class Parser(private val lexer: Lexer) {
     private var currToken: Token = Token(TokenType.ILLEGAL)
     private var peekToken: Token = Token(TokenType.ILLEGAL)
+    var errors: MutableList<String> = mutableListOf()
 
     // For init call nextToken twice to ensure both tokens are set
     init {
@@ -37,6 +39,7 @@ class Parser(private val lexer: Lexer) {
     private fun parseStatement(): Statement? {
         return when (currToken.tokenType) {
             TokenType.LET -> parseLetStatement()
+            TokenType.RETURN -> parseReturnStatement()
             else -> null
         }
     }
@@ -62,6 +65,19 @@ class Parser(private val lexer: Lexer) {
         return stmt
     }
 
+    private fun parseReturnStatement(): Statement? {
+        val stmt = ReturnStatement(currToken)
+
+        nextToken()
+
+        // TODO skip expression for now, read until semicolon
+        while (currTokenIs(TokenType.SEMICOLON)) {
+            nextToken()
+        }
+
+        return stmt
+    }
+
     private fun currTokenIs(type:TokenType): Boolean {
         return currToken.tokenType == type
     }
@@ -75,6 +91,7 @@ class Parser(private val lexer: Lexer) {
             nextToken()
             return true
         } else {
+            errors.add("Expected next token to be $type but was ${peekToken.tokenType}")
             return false
         }
     }

@@ -2,12 +2,12 @@ package org.example.ast.statements
 
 import org.example.ast.Node
 
-open class Statement : Node {
+abstract class Statement : Node {
     override fun getNodeType(): String {
         return "STATEMENT"
     }
 
-    override fun getTokenLiteral(): String {
-        TODO("Not yet implemented")
-    }
+    abstract override fun getTokenLiteral(): String
+
+    abstract override fun toString(): String
 }

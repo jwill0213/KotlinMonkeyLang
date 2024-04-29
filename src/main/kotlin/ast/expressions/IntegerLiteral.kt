@@ -2,7 +2,9 @@ package org.example.ast.expressions
 
 import org.example.Token
 
-class Identifier(private val token: Token) : Expression() {
+class IntegerLiteral(private val token: Token) : Expression() {
+    var value: Int = token.literal.toInt()
+
     override fun getTokenLiteral(): String {
         return token.literal
     }

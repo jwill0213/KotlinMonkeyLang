@@ -16,4 +16,12 @@ class Program : Node {
             ""
         }
     }
+
+    override fun toString(): String {
+        val allStatements = StringBuilder()
+        for (stmt in statements) {
+            allStatements.append(stmt.toString())
+        }
+        return allStatements.toString()
+    }
 }

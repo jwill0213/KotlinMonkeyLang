@@ -3,11 +3,11 @@ package org.example.ast.statements
 import org.example.Token
 import org.example.ast.expressions.Expression
 
-class ReturnStatement(private val token: Token) : Statement() {
-    private var value: Expression? = null
+class ExpressionStatement(private val token: Token) : Statement() {
+    var expression: Expression? = null
 
     constructor(token: Token, value: Expression?) : this(token) {
-        this.value = value
+        this.expression = value
     }
 
     override fun getTokenLiteral(): String {
@@ -15,6 +15,6 @@ class ReturnStatement(private val token: Token) : Statement() {
     }
 
     override fun toString(): String {
-        return "${getTokenLiteral()} ${value.toString()};"
+        return expression?.toString() ?: ""
     }
 }

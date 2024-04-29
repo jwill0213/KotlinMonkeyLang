@@ -8,4 +8,6 @@ abstract class Expression : Node {
     }
 
     abstract override fun getTokenLiteral(): String
+
+    abstract override fun toString(): String
 }

@@ -1,10 +1,7 @@
 package org.example
 
 import org.example.ast.Program
-import org.example.ast.expressions.Expression
-import org.example.ast.expressions.Identifier
-import org.example.ast.expressions.IntegerLiteral
-import org.example.ast.expressions.Precedence
+import org.example.ast.expressions.*
 import org.example.ast.statements.ExpressionStatement
 import org.example.ast.statements.LetStatement
 import org.example.ast.statements.ReturnStatement
@@ -26,6 +23,8 @@ class Parser(private val lexer: Lexer) {
 
         registerPrefix(TokenType.IDENT) { parseIdentifier() }
         registerPrefix(TokenType.INT) { parseIntegerLiteral() }
+        registerPrefix(TokenType.BANG) { parsePrefixExpression() }
+        registerPrefix(TokenType.MINUS) { parsePrefixExpression() }
     }
 
     private fun nextToken() {
@@ -69,7 +68,7 @@ class Parser(private val lexer: Lexer) {
         }
 
         // TODO skip expression for now, read until semicolon
-        while (currTokenIs(TokenType.SEMICOLON)) {
+        while (!currTokenIs(TokenType.SEMICOLON)) {
             nextToken()
         }
 
@@ -82,7 +81,7 @@ class Parser(private val lexer: Lexer) {
         nextToken()
 
         // TODO skip expression for now, read until semicolon
-        while (currTokenIs(TokenType.SEMICOLON)) {
+        while (!currTokenIs(TokenType.SEMICOLON)) {
             nextToken()
         }
 
@@ -120,6 +119,16 @@ class Parser(private val lexer: Lexer) {
 
     private fun parseIntegerLiteral(): Expression {
         return IntegerLiteral(currToken)
+    }
+
+    private fun parsePrefixExpression(): Expression {
+        val expr = PrefixExpression(currToken)
+
+        nextToken()
+
+        expr.right = parseExpression(Precedence.PREFIX)
+
+        return expr
     }
 
     private fun parsePrefixFn(): Expression? {

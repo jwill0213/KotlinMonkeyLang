@@ -119,7 +119,9 @@ class ParserTest {
             assertTrue(statements[0] is ExpressionStatement)
             val expStmt = statements[0] as ExpressionStatement
             assertTrue(expStmt.expression is PrefixExpression)
-            assertIntegerLiteral(expStmt.expression as PrefixExpression, test.third)
+            val prefixExpr = expStmt.expression as PrefixExpression
+            assertEquals(test.second, prefixExpr.operator)
+            assertIntegerLiteral(prefixExpr.right as IntegerLiteral, test.third)
         }
     }
 

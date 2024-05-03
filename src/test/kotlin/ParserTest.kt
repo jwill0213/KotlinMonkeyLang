@@ -1,9 +1,6 @@
 import org.example.Lexer
 import org.example.Parser
-import org.example.ast.expressions.Expression
-import org.example.ast.expressions.Identifier
-import org.example.ast.expressions.IntegerLiteral
-import org.example.ast.expressions.PrefixExpression
+import org.example.ast.expressions.*
 import org.example.ast.statements.ExpressionStatement
 import org.example.ast.statements.LetStatement
 import org.example.ast.statements.ReturnStatement
@@ -102,13 +99,15 @@ class ParserTest {
 
     @Test
     fun test_parsePrefixExpression() {
+        data class PrefixTestCase(val input: String, val operator: String, val right: Int)
+
         val prefixTests = listOf(
-            Triple("!5;", "!", 5),
-            Triple("-15;", "-", 15)
+            PrefixTestCase("!5;", "!", 5),
+            PrefixTestCase("-15;", "-", 15)
         )
 
         for (test in prefixTests) {
-            val parser = Parser(Lexer(test.first))
+            val parser = Parser(Lexer(test.input))
             val program = parser.parseProgram()
             assertNoParserErrors(parser)
             assertNotNull(program)
@@ -120,8 +119,71 @@ class ParserTest {
             val expStmt = statements[0] as ExpressionStatement
             assertTrue(expStmt.expression is PrefixExpression)
             val prefixExpr = expStmt.expression as PrefixExpression
-            assertEquals(test.second, prefixExpr.operator)
-            assertIntegerLiteral(prefixExpr.right as IntegerLiteral, test.third)
+            assertEquals(test.operator, prefixExpr.operator)
+            assertIntegerLiteral(prefixExpr.right as IntegerLiteral, test.right)
+        }
+    }
+
+    @Test
+    fun test_parseInfixExpression() {
+        data class InfixTestCase(val input: String, val left: Int, val operator: String, val right: Int)
+
+        val infixTests = listOf(
+            InfixTestCase("5 + 5;", 5, "+", 5),
+            InfixTestCase("5 - 5;", 5, "-", 5),
+            InfixTestCase("5 * 5;", 5, "*", 5),
+            InfixTestCase("5 / 5;", 5, "/", 5),
+            InfixTestCase("5 > 5;", 5, ">", 5),
+            InfixTestCase("5 < 5;", 5, "<", 5),
+            InfixTestCase("5 == 5;", 5, "==", 5),
+            InfixTestCase("5 != 5;", 5, "!=", 5)
+        )
+
+        for (test in infixTests) {
+            val parser = Parser(Lexer(test.input))
+            val program = parser.parseProgram()
+            assertNoParserErrors(parser)
+            assertNotNull(program)
+
+            val statements = program.statements
+
+            assertEquals(1, statements.size, "Should be 1 statement")
+            assertTrue(statements[0] is ExpressionStatement)
+            val expStmt = statements[0] as ExpressionStatement
+            assertTrue(expStmt.expression is InfixExpression)
+            val infixExpr = expStmt.expression as InfixExpression
+            assertIntegerLiteral(infixExpr.left as IntegerLiteral, test.left)
+            assertEquals(test.operator, infixExpr.operator)
+            assertIntegerLiteral(infixExpr.right as IntegerLiteral, test.right)
+        }
+    }
+
+    @Test
+    fun test_parseExpressionTests() {
+        val exprTests = listOf(
+            Pair("-a * b", "((-a) * b)"),
+            Pair("!-a", "(!(-a))"),
+            Pair("a + b + c", "((a + b) + c)"),
+            Pair("a + b - c", "((a + b) - c)"),
+            Pair("a * b * c", "((a * b) * c)"),
+            Pair("a * b / c", "((a * b) / c)"),
+            Pair("a + b / c", "(a + (b / c))"),
+            Pair("a + b * c + d / e - f", "(((a + (b * c)) + (d / e)) - f)"),
+            Pair("3 + 4; -5 * 5", "(3 + 4)((-5) * 5)"),
+            Pair("5 > 4 == 3 < 4", "((5 > 4) == (3 < 4))"),
+            Pair("5 < 4 != 3 > 4", "((5 < 4) != (3 > 4))"),
+            Pair("3 + 4 * 5 == 3 * 1 + 4 * 5", "((3 + (4 * 5)) == ((3 * 1) + (4 * 5)))"),
+        )
+
+        for (test in exprTests) {
+            val parser = Parser(Lexer(test.first))
+            val program = parser.parseProgram()
+            assertNoParserErrors(parser)
+            assertNotNull(program)
+
+            val statements = program.statements
+
+            assertEquals(test.second, program.toString())
         }
     }
 

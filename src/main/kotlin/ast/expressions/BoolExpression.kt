@@ -1,9 +1,10 @@
 package org.example.ast.expressions
 
 import org.example.Token
+import org.example.TokenType
 
-class IntegerLiteral(private val token: Token) : Expression() {
-    val value: Int = token.literal.toInt()
+class BoolExpression(private val token: Token) : Expression() {
+    var value: Boolean = token.tokenType == TokenType.TRUE
 
     override fun getTokenLiteral(): String {
         return token.literal

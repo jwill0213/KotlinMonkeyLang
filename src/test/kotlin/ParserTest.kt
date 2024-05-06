@@ -92,18 +92,44 @@ class ParserTest {
         assertEquals(1, statements.size, "Should be 1 statement")
         assertTrue(statements[0] is ExpressionStatement)
         val expStmt = statements[0] as ExpressionStatement
-        assertTrue(expStmt.expression is IntegerLiteral)
-        val intExp = expStmt.expression as IntegerLiteral
-        assertIntegerLiteral(intExp, 5)
+        assertIntegerLiteral(expStmt.expression, 5)
+    }
+
+    @Test
+    fun test_parseBooleanExpression() {
+        val input = "true;false;"
+
+        val parser = Parser(Lexer(input))
+
+        val program = parser.parseProgram()
+        assertNoParserErrors(parser)
+        assertNotNull(program)
+
+        val statements = program.statements
+
+        assertEquals(2, statements.size, "Should be 2 statements")
+        assertTrue(statements[0] is ExpressionStatement)
+        var expStmt = statements[0] as ExpressionStatement
+        assertTrue(expStmt.expression is BoolExpression)
+        var boolExpr = expStmt.expression as BoolExpression
+        assertBoolean(boolExpr, true)
+
+        assertTrue(statements[1] is ExpressionStatement)
+        expStmt = statements[1] as ExpressionStatement
+        assertTrue(expStmt.expression is BoolExpression)
+        boolExpr = expStmt.expression as BoolExpression
+        assertBoolean(boolExpr, false)
     }
 
     @Test
     fun test_parsePrefixExpression() {
-        data class PrefixTestCase(val input: String, val operator: String, val right: Int)
+        data class PrefixTestCase(val input: String, val operator: String, val right: Any)
 
         val prefixTests = listOf(
             PrefixTestCase("!5;", "!", 5),
-            PrefixTestCase("-15;", "-", 15)
+            PrefixTestCase("-15;", "-", 15),
+            PrefixTestCase("!true;", "!", true),
+            PrefixTestCase("!false;", "!", false)
         )
 
         for (test in prefixTests) {
@@ -120,13 +146,13 @@ class ParserTest {
             assertTrue(expStmt.expression is PrefixExpression)
             val prefixExpr = expStmt.expression as PrefixExpression
             assertEquals(test.operator, prefixExpr.operator)
-            assertIntegerLiteral(prefixExpr.right as IntegerLiteral, test.right)
+            assertLiteralExpression(prefixExpr.right, test.right)
         }
     }
 
     @Test
     fun test_parseInfixExpression() {
-        data class InfixTestCase(val input: String, val left: Int, val operator: String, val right: Int)
+        data class InfixTestCase(val input: String, val left: Any, val operator: String, val right: Any)
 
         val infixTests = listOf(
             InfixTestCase("5 + 5;", 5, "+", 5),
@@ -136,7 +162,10 @@ class ParserTest {
             InfixTestCase("5 > 5;", 5, ">", 5),
             InfixTestCase("5 < 5;", 5, "<", 5),
             InfixTestCase("5 == 5;", 5, "==", 5),
-            InfixTestCase("5 != 5;", 5, "!=", 5)
+            InfixTestCase("5 != 5;", 5, "!=", 5),
+            InfixTestCase("true == true;", true, "==", true),
+            InfixTestCase("true != false;", true, "!=", false),
+            InfixTestCase("false == false;", false, "==", false)
         )
 
         for (test in infixTests) {
@@ -150,16 +179,14 @@ class ParserTest {
             assertEquals(1, statements.size, "Should be 1 statement")
             assertTrue(statements[0] is ExpressionStatement)
             val expStmt = statements[0] as ExpressionStatement
-            assertTrue(expStmt.expression is InfixExpression)
-            val infixExpr = expStmt.expression as InfixExpression
-            assertIntegerLiteral(infixExpr.left as IntegerLiteral, test.left)
-            assertEquals(test.operator, infixExpr.operator)
-            assertIntegerLiteral(infixExpr.right as IntegerLiteral, test.right)
+
+            assertNotNull(expStmt.expression)
+            expStmt.expression?.let { assertInfixExpression(it, test.left, test.operator, test.right) }
         }
     }
 
     @Test
-    fun test_parseExpressionTests() {
+    fun test_operatorPrecedenceParsing() {
         val exprTests = listOf(
             Pair("-a * b", "((-a) * b)"),
             Pair("!-a", "(!(-a))"),
@@ -173,6 +200,10 @@ class ParserTest {
             Pair("5 > 4 == 3 < 4", "((5 > 4) == (3 < 4))"),
             Pair("5 < 4 != 3 > 4", "((5 < 4) != (3 > 4))"),
             Pair("3 + 4 * 5 == 3 * 1 + 4 * 5", "((3 + (4 * 5)) == ((3 * 1) + (4 * 5)))"),
+            Pair("true", "true"),
+            Pair("false", "false"),
+            Pair("3 > 5 == false", "((3 > 5) == false)"),
+            Pair("3 < 5 == true", "((3 < 5) == true)"),
         )
 
         for (test in exprTests) {
@@ -180,8 +211,6 @@ class ParserTest {
             val program = parser.parseProgram()
             assertNoParserErrors(parser)
             assertNotNull(program)
-
-            val statements = program.statements
 
             assertEquals(test.second, program.toString())
         }
@@ -206,10 +235,44 @@ class ParserTest {
         }
     }
 
-    private fun assertIntegerLiteral(exp: Expression, value: Int) {
-        assertTrue(exp is IntegerLiteral)
-        val intLit = exp as IntegerLiteral
+    private fun assertInfixExpression(expr: Expression, left: Any, operator: String, right: Any) {
+        assertTrue(expr is InfixExpression)
+        val infixExpression = expr as InfixExpression
+
+        assertNotNull(infixExpression.left)
+        infixExpression.left?.let { assertLiteralExpression(it, left) }
+
+        assertEquals(operator, infixExpression.operator)
+
+        assertNotNull(infixExpression.right)
+        infixExpression.right?.let { assertLiteralExpression(it, right) }
+    }
+
+    private fun assertLiteralExpression(expr: Expression?, value: Any) {
+        when (value) {
+            is Int -> assertIntegerLiteral(expr, value)
+            is String -> assertIdentifier(expr, value)
+            is Boolean -> assertBoolean(expr, value)
+        }
+    }
+
+    private fun assertIntegerLiteral(expr: Expression?, value: Int) {
+        assertTrue(expr is IntegerLiteral)
+        val intLit = expr as IntegerLiteral
         assertEquals(value, intLit.value)
         assertEquals("$value", intLit.getTokenLiteral())
+    }
+
+    private fun assertIdentifier(expr: Expression?, value: String) {
+        assertTrue(expr is Identifier)
+        val ident = expr as Identifier
+        assertEquals(value, ident.getTokenLiteral())
+    }
+
+    private fun assertBoolean(expr: Expression?, value: Boolean) {
+        assertTrue(expr is BoolExpression)
+        val boolExpr = expr as BoolExpression
+        assertEquals(value, boolExpr.value)
+        assertEquals("$value", boolExpr.getTokenLiteral())
     }
 }

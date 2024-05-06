@@ -204,6 +204,11 @@ class ParserTest {
             Pair("false", "false"),
             Pair("3 > 5 == false", "((3 > 5) == false)"),
             Pair("3 < 5 == true", "((3 < 5) == true)"),
+            Pair("1 + (2 + 3) + 4", "((1 + (2 + 3)) + 4)"),
+            Pair("(5 + 5) * 2", "((5 + 5) * 2)"),
+            Pair("2 / (5 + 5)", "(2 / (5 + 5))"),
+            Pair("-(5 + 5)", "(-(5 + 5))"),
+            Pair("!(true == true)", "(!(true == true))"),
         )
 
         for (test in exprTests) {

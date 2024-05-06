@@ -21,6 +21,7 @@ class Parser(private val lexer: Lexer) {
         Pair(TokenType.FALSE) { parseBoolean() },
         Pair(TokenType.BANG) { parsePrefixExpression() },
         Pair(TokenType.MINUS) { parsePrefixExpression() },
+        Pair(TokenType.LPAREN) { parseGroupedExpression() },
     )
 
     // Map of token type to infix parse function
@@ -133,8 +134,9 @@ class Parser(private val lexer: Lexer) {
             }
 
             nextToken()
-
-            leftExp = infix(leftExp)
+            if (leftExp != null) {
+                leftExp = infix(leftExp)
+            }
         }
 
         return leftExp
@@ -168,6 +170,18 @@ class Parser(private val lexer: Lexer) {
         val precedence = currPrecedence()
         nextToken()
         expr.right = parseExpression(precedence)
+
+        return expr
+    }
+
+    private fun parseGroupedExpression(): Expression? {
+        nextToken()
+
+        val expr = parseExpression(Precedence.LOWEST)
+
+        if (!expectPeek(TokenType.RPAREN)) {
+            return null
+        }
 
         return expr
     }

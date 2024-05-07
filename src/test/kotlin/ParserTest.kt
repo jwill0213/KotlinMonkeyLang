@@ -221,6 +221,131 @@ class ParserTest {
         }
     }
 
+    @Test
+    fun test_parseIfExpression() {
+        val testInput = "if (x < y) { x }"
+
+        val parser = Parser(Lexer(testInput))
+        val program = parser.parseProgram()
+        assertNoParserErrors(parser)
+        assertNotNull(program)
+
+        val statements = program.statements
+
+        assertEquals(1, statements.size, "Should be 1 statement")
+        assertTrue(statements[0] is ExpressionStatement)
+        assertTrue((statements[0] as ExpressionStatement).expression is IfExpression)
+        val ifExpr = (statements[0] as ExpressionStatement).expression as IfExpression
+
+        assertNotNull(ifExpr.condition)
+        ifExpr.condition?.let { assertInfixExpression(it, "x", "<", "y") }
+
+        assertNotNull(ifExpr.consequence)
+        assertEquals(1, ifExpr.consequence!!.statements.size, "Should be 1 statement in consequence")
+        val consStatement = ifExpr.consequence!!.statements[0]
+        assertTrue(consStatement is ExpressionStatement)
+        val consExpr = (consStatement as ExpressionStatement).expression
+        assertIdentifier(consExpr, "x")
+
+        assertNull(ifExpr.alternative)
+    }
+
+    @Test
+    fun test_parseIfElseExpression() {
+        val testInput = "if (x > y) { x } else { y }"
+
+        val parser = Parser(Lexer(testInput))
+        val program = parser.parseProgram()
+        assertNoParserErrors(parser)
+        assertNotNull(program)
+
+        val statements = program.statements
+
+        assertEquals(1, statements.size, "Should be 1 statement")
+        assertTrue(statements[0] is ExpressionStatement)
+        assertTrue((statements[0] as ExpressionStatement).expression is IfExpression)
+        val ifExpr = (statements[0] as ExpressionStatement).expression as IfExpression
+
+        assertNotNull(ifExpr.condition)
+        ifExpr.condition?.let { assertInfixExpression(it, "x", ">", "y") }
+
+        assertNotNull(ifExpr.consequence)
+        assertEquals(1, ifExpr.consequence!!.statements.size, "Should be 1 statement in consequence")
+        val consStatement = ifExpr.consequence!!.statements[0]
+        assertTrue(consStatement is ExpressionStatement)
+        val consExpr = (consStatement as ExpressionStatement).expression
+        assertIdentifier(consExpr, "x")
+
+        assertNotNull(ifExpr.alternative)
+        assertEquals(1, ifExpr.alternative!!.statements.size, "Should be 1 statement in alternative")
+        val altStatement = ifExpr.alternative!!.statements[0]
+        assertTrue(altStatement is ExpressionStatement)
+        val altExpr = (altStatement as ExpressionStatement).expression
+        assertIdentifier(altExpr, "y")
+    }
+
+    @Test
+    fun test_parseFunctionExpression() {
+        val testInput = "fn(x, y) { x + y; }"
+
+        val parser = Parser(Lexer(testInput))
+        val program = parser.parseProgram()
+        assertNoParserErrors(parser)
+        assertNotNull(program)
+
+        val statements = program.statements
+
+        assertEquals(1, statements.size, "Should be 1 statement")
+        assertTrue(statements[0] is ExpressionStatement)
+        assertTrue((statements[0] as ExpressionStatement).expression is FunctionExpression)
+        val fnExpr = (statements[0] as ExpressionStatement).expression as FunctionExpression
+
+        assertEquals(2, fnExpr.params.size, "Should have 2 parameters")
+        assertLiteralExpression(fnExpr.params[0], "x")
+        assertLiteralExpression(fnExpr.params[1], "y")
+
+        assertEquals(1, fnExpr.body!!.statements.size, "Function body should have 1 statement")
+
+        val bodyStmt = fnExpr.body!!.statements[0]
+        assertTrue(bodyStmt is ExpressionStatement)
+        val expr = (bodyStmt as ExpressionStatement).expression
+        assertNotNull(expr)
+        if (expr != null) {
+            assertInfixExpression(expr, "x", "+", "y")
+        }
+    }
+
+    @Test
+    fun test_parseFunctionParameters() {
+        data class FnParamTest(val input: String, val expectedParams: List<String>)
+
+        val tests = listOf(
+            FnParamTest("fn() {};", listOf()),
+            FnParamTest("fn(x) {};", listOf("x")),
+            FnParamTest("fn(x, y, z) {};", listOf("x", "y", "z")),
+        )
+
+        for (test in tests) {
+            val parser = Parser(Lexer(test.input))
+            val program = parser.parseProgram()
+            assertNoParserErrors(parser)
+            assertNotNull(program)
+
+            val statements = program.statements
+
+            assertEquals(1, statements.size, "Should be 1 statement")
+            assertTrue(statements[0] is ExpressionStatement)
+            assertTrue((statements[0] as ExpressionStatement).expression is FunctionExpression)
+            val fnExpr = (statements[0] as ExpressionStatement).expression as FunctionExpression
+
+            assertEquals(test.expectedParams.size, fnExpr.params.size, "Expected size doesn't match")
+
+            for (i in 0..<test.expectedParams.size) {
+                assertLiteralExpression(fnExpr.params[i], test.expectedParams[i])
+            }
+        }
+    }
+
     private fun assertLetStatement(statement: Statement, name: String) {
         assertTrue(statement is LetStatement)
         val letStatement: LetStatement = statement as LetStatement

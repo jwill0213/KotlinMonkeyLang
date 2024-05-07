@@ -13,7 +13,7 @@ class IfExpression(private val token: Token) : Expression() {
     }
 
     override fun toString(): String {
-        var output = "(if ${condition.toString()} ${consequence.toString()})"
+        var output = "if${condition.toString()} ${consequence.toString()}"
         if (alternative != null) {
             output += "else ${alternative.toString()}"
         }

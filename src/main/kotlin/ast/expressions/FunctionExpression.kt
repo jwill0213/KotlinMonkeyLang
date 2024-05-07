@@ -12,10 +12,6 @@ class FunctionExpression(private val token: Token) : Expression() {
     }
 
     override fun toString(): String {
-        val parmString = StringBuilder()
-        for (p in params) {
-            parmString.append(p.toString())
-        }
-        return "${getTokenLiteral()}($parmString) ${body.toString()}"
+        return "${getTokenLiteral()}(${params.joinToString { it.toString() }}) ${body.toString()}"
     }
 }

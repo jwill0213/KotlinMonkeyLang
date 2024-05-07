@@ -6,7 +6,7 @@ import org.example.ast.expressions.Identifier
 
 class LetStatement(private val token: Token) : Statement() {
     var name: Identifier? = null
-    private var value: Expression? = null
+    var value: Expression? = null
 
     constructor(token: Token, name: Identifier?, value: Expression?) : this(token) {
         this.name = name

@@ -13,47 +13,50 @@ class ParserTest {
 
     @Test
     fun test_parseLetStatements() {
-        val input = """
-            let x = 5;
-            let y = 10;
-            let foobar = 838383;
-        """.trimIndent()
+        data class LetStmtTest(val input: String, val expectedIdent: String, val expectedValue: Any)
 
-        val parser = Parser(Lexer(input))
+        val tests = listOf(
+            LetStmtTest("let x = 5;", "x", 5),
+            LetStmtTest("let y = true;", "y", true),
+            LetStmtTest("let foobar = y;", "foobar", "y")
+        )
 
-        val program = parser.parseProgram()
-        assertNoParserErrors(parser)
-        assertNotNull(program)
+        for (testCase in tests) {
+            val parser = Parser(Lexer(testCase.input))
 
-        val statements = program.statements
+            val program = parser.parseProgram()
+            assertNoParserErrors(parser)
+            assertNotNull(program)
 
-        assertEquals(3, statements.size, "Should be 3 statements")
+            val statements = program.statements
 
-        assertLetStatement(statements[0], "x")
-        assertLetStatement(statements[1], "y")
-        assertLetStatement(statements[2], "foobar")
+            assertEquals(1, statements.size, "Should be 1 statement")
+            assertLetStatement(statements[0], testCase.expectedIdent, testCase.expectedValue)
+        }
     }
 
     @Test
     fun test_parseReturnStatements() {
-        val input = """
-            return 5;
-            return 10;
-            return 993322;
-        """.trimIndent()
+        data class ReturnStmtTest(val input: String, val expectedValue: Any)
 
-        val parser = Parser(Lexer(input))
+        val tests = listOf(
+            ReturnStmtTest("return 5;", 5),
+            ReturnStmtTest("return y;", "y"),
+            ReturnStmtTest("return false;", false)
+        )
 
-        val program = parser.parseProgram()
-        assertNoParserErrors(parser)
-        assertNotNull(program)
+        for (testCase in tests) {
+            val parser = Parser(Lexer(testCase.input))
 
-        val statements = program.statements
+            val program = parser.parseProgram()
+            assertNoParserErrors(parser)
+            assertNotNull(program)
 
-        assertEquals(3, statements.size, "Should be 3 statements")
+            val statements = program.statements
 
-        for (stmt in statements) {
-            assertReturnStatement(stmt)
+            assertEquals(1, statements.size, "Should be 1 statement")
+
+            assertReturnStatement(statements[0], testCase.expectedValue)
         }
     }
 
@@ -209,6 +212,9 @@ class ParserTest {
             Pair("2 / (5 + 5)", "(2 / (5 + 5))"),
             Pair("-(5 + 5)", "(-(5 + 5))"),
             Pair("!(true == true)", "(!(true == true))"),
+            Pair("a + add(b * c) + d", "((a + add((b * c))) + d)"),
+            Pair("add(a, b, 1, 2 * 3, 4 + 5, add(6, 7 * 8))", "add(a, b, 1, (2 * 3), (4 + 5), add(6, (7 * 8)))"),
+            Pair("add(a + b + c * d / f + g)", "add((((a + b) + ((c * d) / f)) + g))"),
         )
 
         for (test in exprTests) {
@@ -346,16 +352,74 @@ class ParserTest {
         }
     }
 
-    private fun assertLetStatement(statement: Statement, name: String) {
+    @Test
+    fun test_parseCallExpression() {
+        val testInput = "add(1, 2 * 3, 4 + 5);"
+
+        val parser = Parser(Lexer(testInput))
+        val program = parser.parseProgram()
+        assertNoParserErrors(parser)
+        assertNotNull(program)
+
+        val statements = program.statements
+
+        assertEquals(1, statements.size, "Should be 1 statement")
+        assertTrue(statements[0] is ExpressionStatement)
+        assertTrue((statements[0] as ExpressionStatement).expression is CallExpression)
+        val callExpr = (statements[0] as ExpressionStatement).expression as CallExpression
+
+        assertIdentifier(callExpr.fn, "add")
+
+        assertEquals(3, callExpr.args.size, "Should have 3 params")
+        assertLiteralExpression(callExpr.args[0], 1)
+        assertInfixExpression(callExpr.args[1], 2, "*", 3)
+        assertInfixExpression(callExpr.args[2], 4, "+", 5)
+    }
+
+    @Test
+    fun test_parseCallParameters() {
+        data class CallParamTest(val input: String, val expectedIdent: String, val expectedArgs: List<String>)
+
+        val tests = listOf(
+            CallParamTest("println();", "println", listOf()),
+            CallParamTest("add(1);", "add", listOf("1")),
+            CallParamTest("add(1, 5 * 3, -2);", "add", listOf("1", "(5 * 3)", "(-2)")),
+        )
+
+        for (test in tests) {
+            val parser = Parser(Lexer(test.input))
+            val program = parser.parseProgram()
+            assertNoParserErrors(parser)
+            assertNotNull(program)
+
+            val statements = program.statements
+
+            assertEquals(1, statements.size, "Should be 1 statement")
+            assertTrue(statements[0] is ExpressionStatement)
+            assertTrue((statements[0] as ExpressionStatement).expression is CallExpression)
+            val callExpr = (statements[0] as ExpressionStatement).expression as CallExpression
+
+            assertEquals(test.expectedArgs.size, callExpr.args.size, "Expected size doesn't match")
+            assertEquals(test.expectedIdent, callExpr.fn.toString())
+
+            for (i in 0..<test.expectedArgs.size) {
+                assertEquals(callExpr.args[i].toString(), test.expectedArgs[i])
+            }
+        }
+    }
+
+    private fun assertLetStatement(statement: Statement, name: String, value: Any) {
         assertTrue(statement is LetStatement)
         val letStatement: LetStatement = statement as LetStatement
         assertEquals(statement.getTokenLiteral(), "let")
         assertEquals(letStatement.name?.getTokenLiteral(), name)
+        assertLiteralExpression(letStatement.value, value)
     }
 
-    private fun assertReturnStatement(statement: Statement) {
+    private fun assertReturnStatement(statement: Statement, value: Any) {
         assertTrue(statement is ReturnStatement)
         assertEquals(statement.getTokenLiteral(), "return")
+        assertLiteralExpression((statement as ReturnStatement).value, value)
     }
 
     private fun assertNoParserErrors(p: Parser) {

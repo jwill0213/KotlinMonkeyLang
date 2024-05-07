@@ -33,6 +33,7 @@ class Parser(private val lexer: Lexer) {
         Pair(TokenType.NOT_EQ) { left: Expression -> parseInfixExpression(left) },
         Pair(TokenType.LT) { left: Expression -> parseInfixExpression(left) },
         Pair(TokenType.GT) { left: Expression -> parseInfixExpression(left) },
+        Pair(TokenType.LPAREN) { function: Expression -> parseCallExpression(function) },
     )
 
     // For init call nextToken twice to prime the parser where both tokens are set
@@ -86,8 +87,14 @@ class Parser(private val lexer: Lexer) {
             return null
         }
 
-        // TODO skip expression for now, read until semicolon
-        while (!currTokenIs(TokenType.SEMICOLON)) {
+        // Advance token to first token of the expression
+        nextToken()
+
+        // Parse expression to assign to the identifier
+        stmt.value = parseExpression(Precedence.LOWEST)
+
+        // If peek token is SEMICOLON, advance tokens again
+        if (peekTokenIs(TokenType.SEMICOLON)) {
             nextToken()
         }
 
@@ -100,8 +107,11 @@ class Parser(private val lexer: Lexer) {
 
         nextToken()
 
-        // TODO skip expression for now, read until semicolon
-        while (!currTokenIs(TokenType.SEMICOLON)) {
+        // Parse expression to assign to the identifier
+        stmt.value = parseExpression(Precedence.LOWEST)
+
+        // If peek token is SEMICOLON, advance tokens again
+        if (peekTokenIs(TokenType.SEMICOLON)) {
             nextToken()
         }
 
@@ -199,6 +209,59 @@ class Parser(private val lexer: Lexer) {
         expr.right = parseExpression(precedence)
 
         return expr
+    }
+
+    /**
+     * Create InfixExpression and call parseExpression to recursively parse the right side of the infix expression
+     * passing in the current precedence
+     */
+    private fun parseCallExpression(fn: Expression): CallExpression {
+        val expr = CallExpression(currToken, fn)
+
+        expr.args = parseCallArguments()
+
+        return expr
+    }
+
+    /**
+     * Parse comma separated list of parameters for a function.
+     */
+    private fun parseCallArguments(): List<Expression> {
+        val argList = mutableListOf<Expression>()
+
+        if (peekTokenIs(TokenType.RPAREN)) {
+            // No arguments. Advance tokens and return
+            nextToken()
+            return argList
+        }
+
+        // We are currently on LPAREN. Advance to next token
+        nextToken()
+        // Parse the first argument
+        var argExpr = parseExpression(Precedence.LOWEST)
+        if (argExpr != null) {
+            argList.add(argExpr)
+        }
+
+        // While the token after the expression is a comma, keep parsing expressions
+        while (peekTokenIs(TokenType.COMMA)) {
+            // Advance twice to skip the comma
+            nextToken()
+            nextToken()
+
+            // Parse expression and add it to the argList if not null
+            argExpr = parseExpression(Precedence.LOWEST)
+            if (argExpr != null) {
+                argList.add(argExpr)
+            }
+        }
+
+        // Next token should be the RPAREN at the end of the argument list
+        if (!expectPeek(TokenType.RPAREN)) {
+            return argList
+        }
+
+        return argList
     }
 
     /**

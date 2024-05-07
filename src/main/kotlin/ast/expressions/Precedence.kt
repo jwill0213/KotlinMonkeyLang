@@ -22,6 +22,7 @@ enum class Precedence(val rank: Int) {
                 TokenType.MINUS -> SUM
                 TokenType.SLASH -> PRODUCT
                 TokenType.ASTERISK -> PRODUCT
+                TokenType.LPAREN -> CALL
                 else -> null
             }
         }

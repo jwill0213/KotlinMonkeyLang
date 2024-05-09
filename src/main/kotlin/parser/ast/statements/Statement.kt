@@ -1,6 +1,6 @@
-package org.example.ast.statements
+package org.example.parser.ast.statements
 
-import org.example.ast.Node
+import org.example.parser.ast.Node
 
 abstract class Statement : Node {
     override fun getNodeType(): String {

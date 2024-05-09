@@ -1,7 +1,7 @@
-package org.example.ast.expressions
+package org.example.parser.ast.expressions
 
-import org.example.Token
-import org.example.ast.statements.BlockStatement
+import org.example.lexer.Token
+import org.example.parser.ast.statements.BlockStatement
 
 class FunctionExpression(private val token: Token) : Expression() {
     var params: List<Identifier> = mutableListOf()

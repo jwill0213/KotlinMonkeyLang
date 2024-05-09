@@ -1,6 +1,6 @@
-package org.example.ast.expressions
+package org.example.parser.ast.expressions
 
-import org.example.ast.Node
+import org.example.parser.ast.Node
 
 abstract class Expression : Node {
     override fun getNodeType(): String {

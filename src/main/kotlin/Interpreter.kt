@@ -1,5 +1,8 @@
 package org.example
 
+import org.example.lexer.Lexer
+import org.example.parser.Parser
+
 fun main() {
     val prompt = ">> "
     val MONKEY_FACE = """
@@ -31,7 +34,10 @@ fun main() {
                 println("\t $e \n")
             }
         } else {
-            println(program.toString())
+            val evaluated = program.eval()
+            if (evaluated != null) {
+                println(evaluated.inspect())
+            }
         }
 
         println()

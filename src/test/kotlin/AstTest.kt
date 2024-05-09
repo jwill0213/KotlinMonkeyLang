@@ -1,8 +1,8 @@
-import org.example.Token
-import org.example.TokenType
-import org.example.ast.Program
-import org.example.ast.expressions.Identifier
-import org.example.ast.statements.LetStatement
+import org.example.lexer.Token
+import org.example.lexer.TokenType
+import org.example.parser.ast.Program
+import org.example.parser.ast.expressions.Identifier
+import org.example.parser.ast.statements.LetStatement
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 

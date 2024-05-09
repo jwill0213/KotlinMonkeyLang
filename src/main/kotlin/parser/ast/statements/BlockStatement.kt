@@ -1,20 +1,12 @@
-package org.example.ast
+package org.example.parser.ast.statements
 
-import org.example.ast.statements.Statement
+import org.example.lexer.Token
 
-class Program : Node {
+class BlockStatement(private val token: Token) : Statement() {
     var statements: MutableList<Statement> = mutableListOf()
 
-    override fun getNodeType(): String {
-        return "ROOT"
-    }
-
     override fun getTokenLiteral(): String {
-        return if (statements.isNotEmpty()) {
-            statements[0].getTokenLiteral()
-        } else {
-            ""
-        }
+        return token.literal
     }
 
     override fun toString(): String {

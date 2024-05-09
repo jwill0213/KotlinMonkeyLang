@@ -1,8 +1,8 @@
-package org.example.ast.statements
+package org.example.parser.ast.statements
 
-import org.example.Token
-import org.example.ast.expressions.Expression
-import org.example.ast.expressions.Identifier
+import org.example.lexer.Token
+import org.example.parser.ast.expressions.Expression
+import org.example.parser.ast.expressions.Identifier
 
 class LetStatement(private val token: Token) : Statement() {
     var name: Identifier? = null

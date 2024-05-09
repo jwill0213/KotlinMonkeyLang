@@ -1,7 +1,7 @@
-package org.example.ast.statements
+package org.example.parser.ast.statements
 
-import org.example.Token
-import org.example.ast.expressions.Expression
+import org.example.lexer.Token
+import org.example.parser.ast.expressions.Expression
 
 class ReturnStatement(private val token: Token) : Statement() {
     var value: Expression? = null

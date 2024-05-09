@@ -1,9 +1,8 @@
-import org.example.Lexer
-import org.example.Token
-import org.example.TokenType
+import org.example.lexer.Lexer
+import org.example.lexer.Token
+import org.example.lexer.TokenType
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-
-import org.junit.jupiter.api.Assertions.*
 
 class LexerTest {
 

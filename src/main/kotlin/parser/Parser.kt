@@ -1,8 +1,11 @@
-package org.example
+package org.example.parser
 
-import org.example.ast.Program
-import org.example.ast.expressions.*
-import org.example.ast.statements.*
+import org.example.lexer.Lexer
+import org.example.lexer.Token
+import org.example.lexer.TokenType
+import org.example.parser.ast.Program
+import org.example.parser.ast.expressions.*
+import org.example.parser.ast.statements.*
 
 class Parser(private val lexer: Lexer) {
     var errors: MutableList<String> = mutableListOf()

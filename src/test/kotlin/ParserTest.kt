@@ -1,10 +1,10 @@
-import org.example.Lexer
-import org.example.Parser
-import org.example.ast.expressions.*
-import org.example.ast.statements.ExpressionStatement
-import org.example.ast.statements.LetStatement
-import org.example.ast.statements.ReturnStatement
-import org.example.ast.statements.Statement
+import org.example.lexer.Lexer
+import org.example.parser.Parser
+import org.example.parser.ast.expressions.*
+import org.example.parser.ast.statements.ExpressionStatement
+import org.example.parser.ast.statements.LetStatement
+import org.example.parser.ast.statements.ReturnStatement
+import org.example.parser.ast.statements.Statement
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import kotlin.test.fail

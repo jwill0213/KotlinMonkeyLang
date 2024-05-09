@@ -1,6 +1,6 @@
-package org.example.ast.expressions
+package org.example.parser.ast.expressions
 
-import org.example.Token
+import org.example.lexer.Token
 
 class PrefixExpression(private val token: Token) : Expression() {
     var operator: String = getTokenLiteral()

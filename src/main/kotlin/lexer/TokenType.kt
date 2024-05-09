@@ -1,8 +1,4 @@
-package org.example
-
-data class Token(val tokenType: TokenType, val literal: String) {
-    constructor(tokenType: TokenType) : this(tokenType, tokenType.token)
-}
+package org.example.lexer
 
 enum class TokenType(val token: String) {
     ILLEGAL("ILLEGAL"),

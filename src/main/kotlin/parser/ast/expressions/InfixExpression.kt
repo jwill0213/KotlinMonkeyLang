@@ -1,6 +1,6 @@
-package org.example.ast.expressions
+package org.example.parser.ast.expressions
 
-import org.example.Token
+import org.example.lexer.Token
 
 class InfixExpression(private val token: Token, var left: Expression? = null) : Expression() {
     var operator: String = getTokenLiteral()

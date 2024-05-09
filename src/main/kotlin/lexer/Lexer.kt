@@ -1,4 +1,8 @@
-package org.example
+package org.example.lexer
+
+data class Token(val tokenType: TokenType, val literal: String) {
+    constructor(tokenType: TokenType) : this(tokenType, tokenType.token)
+}
 
 class Lexer(private val input: String) {
     private var position: Int = 0

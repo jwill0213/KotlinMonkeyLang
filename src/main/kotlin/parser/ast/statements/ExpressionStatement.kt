@@ -1,7 +1,8 @@
-package org.example.ast.statements
+package org.example.parser.ast.statements
 
-import org.example.Token
-import org.example.ast.expressions.Expression
+import org.example.lexer.Token
+import org.example.`object`.MonkeyObject
+import org.example.parser.ast.expressions.Expression
 
 class ExpressionStatement(private val token: Token) : Statement() {
     var expression: Expression? = null
@@ -16,5 +17,9 @@ class ExpressionStatement(private val token: Token) : Statement() {
 
     override fun toString(): String {
         return expression?.toString() ?: ""
+    }
+
+    override fun eval(): MonkeyObject? {
+        return expression?.eval()
     }
 }

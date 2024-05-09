@@ -1,6 +1,8 @@
-package org.example.ast.expressions
+package org.example.parser.ast.expressions
 
-import org.example.Token
+import org.example.lexer.Token
+import org.example.`object`.MonkeyInt
+import org.example.`object`.MonkeyObject
 
 class IntegerLiteral(private val token: Token) : Expression() {
     val value: Int = token.literal.toInt()
@@ -11,5 +13,9 @@ class IntegerLiteral(private val token: Token) : Expression() {
 
     override fun toString(): String {
         return token.literal
+    }
+
+    override fun eval(): MonkeyObject {
+        return MonkeyInt(value)
     }
 }

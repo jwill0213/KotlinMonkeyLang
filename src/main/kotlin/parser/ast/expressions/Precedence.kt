@@ -1,6 +1,6 @@
-package org.example.ast.expressions
+package org.example.parser.ast.expressions
 
-import org.example.TokenType
+import org.example.lexer.TokenType
 
 enum class Precedence(val rank: Int) {
     LOWEST(1),

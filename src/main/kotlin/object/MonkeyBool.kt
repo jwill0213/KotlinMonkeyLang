@@ -12,5 +12,13 @@ class MonkeyBool(var value: Boolean) : MonkeyObject {
     companion object {
         val TRUE = MonkeyBool(true)
         val FALSE = MonkeyBool(false)
+
+        fun negate(b: MonkeyBool?): MonkeyBool {
+            return if (b?.value == true) FALSE else TRUE
+        }
+
+        fun fromInt(b: MonkeyInt?): MonkeyBool {
+            return if (b == null || b.value == 0) FALSE else TRUE
+        }
     }
 }

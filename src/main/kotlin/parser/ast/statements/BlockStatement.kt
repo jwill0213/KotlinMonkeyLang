@@ -1,6 +1,7 @@
 package org.example.parser.ast.statements
 
 import org.example.lexer.Token
+import org.example.`object`.MonkeyObject
 
 class BlockStatement(private val token: Token) : Statement() {
     var statements: MutableList<Statement> = mutableListOf()
@@ -15,5 +16,15 @@ class BlockStatement(private val token: Token) : Statement() {
             allStatements.append(stmt.toString())
         }
         return allStatements.toString()
+    }
+
+    override fun eval(): MonkeyObject? {
+        var result: MonkeyObject? = null
+
+        for (stmt in statements) {
+            result = stmt.eval()
+        }
+
+        return result
     }
 }

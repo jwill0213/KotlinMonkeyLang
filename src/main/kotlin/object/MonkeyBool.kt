@@ -17,6 +17,15 @@ class MonkeyBool(var value: Boolean) : MonkeyObject {
             return if (bool) TRUE else FALSE
         }
 
+        fun fromMonkeyObj(obj: MonkeyObject): MonkeyBool {
+            return when (obj) {
+                is MonkeyBool -> obj
+                is MonkeyInt -> fromInt(obj)
+                is MonkeyNull -> FALSE
+                else -> FALSE
+            }
+        }
+
         fun negate(b: MonkeyBool?): MonkeyBool {
             return if (b?.value == true) FALSE else TRUE
         }

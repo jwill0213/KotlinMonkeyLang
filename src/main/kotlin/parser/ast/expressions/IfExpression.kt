@@ -1,6 +1,9 @@
 package org.example.parser.ast.expressions
 
 import org.example.lexer.Token
+import org.example.`object`.MonkeyBool
+import org.example.`object`.MonkeyNull
+import org.example.`object`.MonkeyObject
 import org.example.parser.ast.statements.BlockStatement
 
 class IfExpression(private val token: Token) : Expression() {
@@ -18,5 +21,14 @@ class IfExpression(private val token: Token) : Expression() {
             output += "else ${alternative.toString()}"
         }
         return output
+    }
+
+    override fun eval(): MonkeyObject {
+        val condResult: MonkeyObject = condition?.eval() ?: MonkeyNull.NULL
+        return if (MonkeyBool.fromMonkeyObj(condResult) == MonkeyBool.TRUE) {
+            consequence?.eval() ?: MonkeyNull.NULL
+        } else {
+            alternative?.eval() ?: MonkeyNull.NULL
+        }
     }
 }

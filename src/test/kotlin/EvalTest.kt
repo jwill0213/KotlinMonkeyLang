@@ -1,6 +1,7 @@
 import org.example.lexer.Lexer
 import org.example.`object`.MonkeyBool
 import org.example.`object`.MonkeyInt
+import org.example.`object`.MonkeyNull
 import org.example.`object`.MonkeyObject
 import org.example.parser.Parser
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -88,6 +89,29 @@ class EvalTest {
         }
     }
 
+    @Test
+    fun test_evalIfExpression() {
+        val tests = listOf(
+            Pair("if (true) { 10 }", 10),
+            Pair("if (false) { 10 }", null),
+            Pair("if (1) { 10 }", 10),
+            Pair("if (1 < 2) { 10 }", 10),
+            Pair("if (1 > 2) { 10 }", null),
+            Pair("if (1 > 2) { 10 } else { 20 }", 20),
+            Pair("if (1 < 2) { 10 } else { 20 }", 10),
+        )
+
+        for (testCase in tests) {
+            val evaluatedValue = evalProgramForTest(testCase.first)
+
+            if (testCase.second is Int) {
+                assertIntegerObject(evaluatedValue, testCase.second as Int)
+            } else {
+                assertNullObject(evaluatedValue)
+            }
+        }
+    }
+
     private fun evalProgramForTest(input: String): MonkeyObject {
         val program = Parser(Lexer(input)).parseProgram()
         assertNotNull(program)
@@ -106,5 +130,10 @@ class EvalTest {
         assertNotNull(obj)
         assertTrue(obj is MonkeyBool)
         assertEquals(obj.value, expected)
+    }
+
+    private fun assertNullObject(obj: MonkeyObject?) {
+        assertNotNull(obj)
+        assertTrue(obj is MonkeyNull)
     }
 }

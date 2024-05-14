@@ -1,6 +1,7 @@
 package org.example.parser.ast.expressions
 
 import org.example.lexer.Token
+import org.example.`object`.MonkeyBool
 import org.example.`object`.MonkeyInt
 import org.example.`object`.MonkeyNull
 import org.example.`object`.MonkeyObject
@@ -25,6 +26,11 @@ class InfixExpression(private val token: Token, var left: Expression? = null) : 
             return evalIntInfixExpression(left, right)
         }
 
+        if (left is MonkeyBool && right is MonkeyBool) {
+            return evalBooleanInfixExpression(left, right)
+        }
+
+
         return MonkeyNull.NULL
     }
 
@@ -34,6 +40,18 @@ class InfixExpression(private val token: Token, var left: Expression? = null) : 
             "-" -> MonkeyInt(left.value - right.value)
             "*" -> MonkeyInt(left.value * right.value)
             "/" -> MonkeyInt(left.value / right.value)
+            "<" -> MonkeyBool.parseNativeBool(left.value < right.value)
+            ">" -> MonkeyBool.parseNativeBool(left.value > right.value)
+            "==" -> MonkeyBool.parseNativeBool(left.value == right.value)
+            "!=" -> MonkeyBool.parseNativeBool(left.value != right.value)
+            else -> MonkeyNull.NULL
+        }
+    }
+
+    private fun evalBooleanInfixExpression(left: MonkeyBool, right: MonkeyBool): MonkeyObject {
+        return when (operator) {
+            "==" -> MonkeyBool.parseNativeBool(left.value == right.value)
+            "!=" -> MonkeyBool.parseNativeBool(left.value != right.value)
             else -> MonkeyNull.NULL
         }
     }

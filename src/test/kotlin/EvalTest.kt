@@ -42,7 +42,25 @@ class EvalTest {
     fun test_evalBoolExpression() {
         val tests = listOf(
             Pair("true", true),
-            Pair("false", false)
+            Pair("false", false),
+            Pair("1 < 2", true),
+            Pair("1 > 2", false),
+            Pair("1 < 1", false),
+            Pair("1 > 1", false),
+            Pair("1 + 1 > 1", true),
+            Pair("1 == 1", true),
+            Pair("1 != 1", false),
+            Pair("1 == 2", false),
+            Pair("1 != 2", true),
+            Pair("true == true", true),
+            Pair("false == false", true),
+            Pair("true == false", false),
+            Pair("true != false", true),
+            Pair("false != true", true),
+            Pair("(1 < 2) == true", true),
+            Pair("(1 < 2) == false", false),
+            Pair("(1 > 2) == true", false),
+            Pair("(1 > 2) == false", true)
         )
 
         for (testCase in tests) {

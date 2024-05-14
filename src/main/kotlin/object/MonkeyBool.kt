@@ -13,6 +13,10 @@ class MonkeyBool(var value: Boolean) : MonkeyObject {
         val TRUE = MonkeyBool(true)
         val FALSE = MonkeyBool(false)
 
+        fun parseNativeBool(bool: Boolean): MonkeyBool {
+            return if (bool) TRUE else FALSE
+        }
+
         fun negate(b: MonkeyBool?): MonkeyBool {
             return if (b?.value == true) FALSE else TRUE
         }

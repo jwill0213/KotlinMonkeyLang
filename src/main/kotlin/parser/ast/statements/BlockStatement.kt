@@ -2,6 +2,7 @@ package org.example.parser.ast.statements
 
 import org.example.lexer.Token
 import org.example.`object`.MonkeyObject
+import org.example.`object`.MonkeyReturn
 
 class BlockStatement(private val token: Token) : Statement() {
     var statements: MutableList<Statement> = mutableListOf()
@@ -23,6 +24,10 @@ class BlockStatement(private val token: Token) : Statement() {
 
         for (stmt in statements) {
             result = stmt.eval()
+
+            if (result is MonkeyReturn) {
+                return result
+            }
         }
 
         return result

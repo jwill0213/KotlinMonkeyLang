@@ -1,6 +1,7 @@
 package org.example.parser.ast
 
 import org.example.`object`.MonkeyObject
+import org.example.`object`.MonkeyReturn
 import org.example.parser.ast.statements.Statement
 
 class Program : Node {
@@ -31,6 +32,10 @@ class Program : Node {
 
         for (stmt in statements) {
             result = stmt.eval()
+
+            if (result is MonkeyReturn) {
+                return result.value
+            }
         }
 
         return result

@@ -112,6 +112,33 @@ class EvalTest {
         }
     }
 
+    @Test
+    fun test_evalReturnStatements() {
+        val tests = listOf(
+            Pair("return 10;", 10),
+            Pair("return 10; 9;", 10),
+            Pair("return 2 * 5; 9;", 10),
+            Pair("9; return 2 * 5; 9;", 10),
+            Pair(
+                """
+                if (10 > 1) {
+                    if (10 > 1) {
+                        return 10;
+                    }
+
+                    return 1;
+                }
+                """.trimIndent(), 10
+            ),
+        )
+
+        for (testCase in tests) {
+            val evaluatedValue = evalProgramForTest(testCase.first)
+
+            assertIntegerObject(evaluatedValue, testCase.second)
+        }
+    }
+
     private fun evalProgramForTest(input: String): MonkeyObject {
         val program = Parser(Lexer(input)).parseProgram()
         assertNotNull(program)
@@ -123,13 +150,13 @@ class EvalTest {
     private fun assertIntegerObject(obj: MonkeyObject?, expected: Int) {
         assertNotNull(obj)
         assertTrue(obj is MonkeyInt)
-        assertEquals(obj.value, expected)
+        assertEquals(expected, obj.value)
     }
 
     private fun assertBooleanObject(obj: MonkeyObject?, expected: Boolean) {
         assertNotNull(obj)
         assertTrue(obj is MonkeyBool)
-        assertEquals(obj.value, expected)
+        assertEquals(expected, obj.value)
     }
 
     private fun assertNullObject(obj: MonkeyObject?) {

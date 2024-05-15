@@ -1,10 +1,7 @@
 package org.example.parser.ast.expressions
 
 import org.example.lexer.Token
-import org.example.`object`.MonkeyBool
-import org.example.`object`.MonkeyInt
-import org.example.`object`.MonkeyNull
-import org.example.`object`.MonkeyObject
+import org.example.`object`.*
 
 class InfixExpression(private val token: Token, var left: Expression? = null) : Expression() {
     var operator: String = getTokenLiteral()
@@ -19,19 +16,22 @@ class InfixExpression(private val token: Token, var left: Expression? = null) : 
     }
 
     override fun eval(): MonkeyObject {
-        val left = left?.eval() ?: MonkeyNull.NULL
-        val right = right?.eval() ?: MonkeyNull.NULL
-
-        if (left is MonkeyInt && right is MonkeyInt) {
-            return evalIntInfixExpression(left, right)
+        val leftEval = left?.eval() ?: MonkeyNull.NULL
+        if (leftEval is MonkeyError) {
+            return leftEval
         }
 
-        if (left is MonkeyBool && right is MonkeyBool) {
-            return evalBooleanInfixExpression(left, right)
+        val rightEval = right?.eval() ?: MonkeyNull.NULL
+        if (rightEval is MonkeyError) {
+            return rightEval
         }
 
-
-        return MonkeyNull.NULL
+        return when {
+            leftEval is MonkeyInt && rightEval is MonkeyInt -> evalIntInfixExpression(leftEval, rightEval)
+            leftEval is MonkeyBool && rightEval is MonkeyBool -> evalBooleanInfixExpression(leftEval, rightEval)
+            leftEval.getType() != rightEval.getType() -> MonkeyError("type mismatch: ${leftEval.getType()} $operator ${rightEval.getType()}")
+            else -> MonkeyError("unknown operator: ${leftEval.getType()} $operator ${rightEval.getType()}")
+        }
     }
 
     private fun evalIntInfixExpression(left: MonkeyInt, right: MonkeyInt): MonkeyObject {
@@ -44,7 +44,7 @@ class InfixExpression(private val token: Token, var left: Expression? = null) : 
             ">" -> MonkeyBool.parseNativeBool(left.value > right.value)
             "==" -> MonkeyBool.parseNativeBool(left.value == right.value)
             "!=" -> MonkeyBool.parseNativeBool(left.value != right.value)
-            else -> MonkeyNull.NULL
+            else -> MonkeyError("unknown operator: ${left.getType()} $operator ${right.getType()}")
         }
     }
 
@@ -52,7 +52,7 @@ class InfixExpression(private val token: Token, var left: Expression? = null) : 
         return when (operator) {
             "==" -> MonkeyBool.parseNativeBool(left.value == right.value)
             "!=" -> MonkeyBool.parseNativeBool(left.value != right.value)
-            else -> MonkeyNull.NULL
+            else -> MonkeyError("unknown operator: ${left.getType()} $operator ${right.getType()}")
         }
     }
 }

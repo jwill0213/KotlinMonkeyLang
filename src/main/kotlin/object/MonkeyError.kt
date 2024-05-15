@@ -1,11 +1,11 @@
 package org.example.`object`
 
-class MonkeyInt(var value: Int) : MonkeyObject {
+class MonkeyError(val message: String) : MonkeyObject {
     override fun getType(): ObjectType {
-        return ObjectType.INTEGER
+        return ObjectType.ERROR
     }
 
     override fun inspect(): String {
-        return value.toString()
+        return "ERROR: $message"
     }
 }

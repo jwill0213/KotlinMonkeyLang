@@ -2,7 +2,7 @@ package org.example.`object`
 
 class MonkeyNull : MonkeyObject {
     override fun getType(): ObjectType {
-        return ObjectType.NULL_OBJ
+        return ObjectType.NULL
     }
 
     override fun inspect(): String {

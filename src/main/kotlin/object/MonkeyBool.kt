@@ -2,7 +2,7 @@ package org.example.`object`
 
 class MonkeyBool(var value: Boolean) : MonkeyObject {
     override fun getType(): ObjectType {
-        return ObjectType.BOOLEAN_OBJ
+        return ObjectType.BOOLEAN
     }
 
     override fun inspect(): String {

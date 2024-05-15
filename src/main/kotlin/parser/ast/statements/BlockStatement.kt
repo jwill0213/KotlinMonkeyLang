@@ -1,6 +1,7 @@
 package org.example.parser.ast.statements
 
 import org.example.lexer.Token
+import org.example.`object`.MonkeyError
 import org.example.`object`.MonkeyObject
 import org.example.`object`.MonkeyReturn
 
@@ -25,7 +26,7 @@ class BlockStatement(private val token: Token) : Statement() {
         for (stmt in statements) {
             result = stmt.eval()
 
-            if (result is MonkeyReturn) {
+            if (result is MonkeyReturn || result is MonkeyError) {
                 return result
             }
         }

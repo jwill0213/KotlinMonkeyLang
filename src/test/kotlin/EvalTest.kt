@@ -1,8 +1,5 @@
 import org.example.lexer.Lexer
-import org.example.`object`.MonkeyBool
-import org.example.`object`.MonkeyInt
-import org.example.`object`.MonkeyNull
-import org.example.`object`.MonkeyObject
+import org.example.`object`.*
 import org.example.parser.Parser
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -139,6 +136,58 @@ class EvalTest {
         }
     }
 
+    @Test
+    fun test_errorHandling() {
+        val tests = listOf(
+            Pair(
+                "5 + true;",
+                "type mismatch: INTEGER + BOOLEAN",
+            ),
+            Pair(
+                "5 + true; 5;",
+                "type mismatch: INTEGER + BOOLEAN",
+            ),
+            Pair(
+                "-true",
+                "unknown operator: -BOOLEAN",
+            ),
+            Pair(
+                "true + false;",
+                "unknown operator: BOOLEAN + BOOLEAN",
+            ),
+            Pair(
+                "5; true + false; 5",
+                "unknown operator: BOOLEAN + BOOLEAN",
+            ),
+            Pair(
+                "if (10 > 1) { true + false; }",
+                "unknown operator: BOOLEAN + BOOLEAN",
+            ),
+            Pair(
+                """
+                if (10 > 1) {
+                    if (10 > 1) {
+                        return true + false;
+                    }
+
+                    return 1;
+                }
+                """.trimIndent(),
+                "unknown operator: BOOLEAN + BOOLEAN",
+            ),
+        )
+
+        for (testCase in tests) {
+            val evaluatedValue = evalProgramForTest(testCase.first)
+
+            assertTrue(
+                evaluatedValue is MonkeyError,
+                "Expected 'MonkeyError' but got '${evaluatedValue.javaClass.simpleName}'"
+            )
+            assertEquals(testCase.second, evaluatedValue.message)
+        }
+    }
+
     private fun evalProgramForTest(input: String): MonkeyObject {
         val program = Parser(Lexer(input)).parseProgram()
         assertNotNull(program)
@@ -149,18 +198,18 @@ class EvalTest {
 
     private fun assertIntegerObject(obj: MonkeyObject?, expected: Int) {
         assertNotNull(obj)
-        assertTrue(obj is MonkeyInt)
+        assertTrue(obj is MonkeyInt, "Expected 'MonkeyInt' but got '${obj.javaClass.simpleName}'")
         assertEquals(expected, obj.value)
     }
 
     private fun assertBooleanObject(obj: MonkeyObject?, expected: Boolean) {
         assertNotNull(obj)
-        assertTrue(obj is MonkeyBool)
+        assertTrue(obj is MonkeyBool, "Expected 'MonkeyBool' but got '${obj.javaClass.simpleName}'")
         assertEquals(expected, obj.value)
     }
 
     private fun assertNullObject(obj: MonkeyObject?) {
         assertNotNull(obj)
-        assertTrue(obj is MonkeyNull)
+        assertTrue(obj is MonkeyNull, "Expected 'MonkeyNull' but got '${obj.javaClass.simpleName}'")
     }
 }

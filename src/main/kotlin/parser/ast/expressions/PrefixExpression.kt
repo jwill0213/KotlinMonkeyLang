@@ -1,10 +1,7 @@
 package org.example.parser.ast.expressions
 
 import org.example.lexer.Token
-import org.example.`object`.MonkeyBool
-import org.example.`object`.MonkeyInt
-import org.example.`object`.MonkeyNull
-import org.example.`object`.MonkeyObject
+import org.example.`object`.*
 
 class PrefixExpression(private val token: Token) : Expression() {
     var operator: String = getTokenLiteral()
@@ -19,10 +16,15 @@ class PrefixExpression(private val token: Token) : Expression() {
     }
 
     override fun eval(): MonkeyObject {
+        val rightEval = right?.eval() ?: MonkeyNull.NULL
+        if (rightEval is MonkeyError) {
+            return rightEval
+        }
+
         return when (operator) {
-            "!" -> evalBangOperatorExpression(right?.eval())
-            "-" -> evalMinusOperatorExpression(right?.eval())
-            else -> MonkeyNull.NULL
+            "!" -> evalBangOperatorExpression(rightEval)
+            "-" -> evalMinusOperatorExpression(rightEval)
+            else -> MonkeyError("unknown operator: $operator${rightEval.getType()}")
         }
     }
 
@@ -37,7 +39,7 @@ class PrefixExpression(private val token: Token) : Expression() {
 
     private fun evalMinusOperatorExpression(rightObj: MonkeyObject?): MonkeyObject {
         if (rightObj !is MonkeyInt) {
-            return MonkeyNull.NULL
+            return MonkeyError("unknown operator: $operator${rightObj?.getType()}")
         }
 
         return MonkeyInt(-rightObj.value)

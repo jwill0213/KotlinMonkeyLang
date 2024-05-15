@@ -1,6 +1,7 @@
 package org.example.parser.ast.statements
 
 import org.example.lexer.Token
+import org.example.`object`.Environment
 import org.example.`object`.MonkeyNull
 import org.example.`object`.MonkeyObject
 import org.example.`object`.MonkeyReturn
@@ -17,8 +18,8 @@ class ReturnStatement(private val token: Token) : Statement() {
         return "${getTokenLiteral()} ${value.toString()};"
     }
 
-    override fun eval(): MonkeyObject {
-        val retVal = value?.eval() ?: MonkeyNull.NULL
+    override fun eval(env: Environment): MonkeyObject {
+        val retVal = value?.eval(env) ?: MonkeyNull.NULL
         return MonkeyReturn(retVal)
     }
 }

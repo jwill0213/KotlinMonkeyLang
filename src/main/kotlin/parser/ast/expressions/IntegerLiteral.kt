@@ -1,6 +1,7 @@
 package org.example.parser.ast.expressions
 
 import org.example.lexer.Token
+import org.example.`object`.Environment
 import org.example.`object`.MonkeyInt
 import org.example.`object`.MonkeyObject
 
@@ -15,7 +16,7 @@ class IntegerLiteral(private val token: Token) : Expression() {
         return token.literal
     }
 
-    override fun eval(): MonkeyObject {
+    override fun eval(env: Environment): MonkeyObject {
         return MonkeyInt(value)
     }
 }

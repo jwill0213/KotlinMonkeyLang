@@ -6,4 +6,5 @@ enum class ObjectType(val value: String) {
     NULL("NULL_OBJ"),
     RETURN_VALUE("RETURN_VALUE_OBJ"),
     ERROR("ERROR_OBJ"),
+    FUNCTION("FUNCTION_OBJ")
 }

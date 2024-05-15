@@ -1,6 +1,7 @@
 package org.example
 
 import org.example.lexer.Lexer
+import org.example.`object`.Environment
 import org.example.parser.Parser
 
 fun main() {
@@ -34,7 +35,7 @@ fun main() {
                 println("\t $e \n")
             }
         } else {
-            val evaluated = program.eval()
+            val evaluated = program.eval(Environment.globalEnv)
             if (evaluated != null) {
                 println(evaluated.inspect())
             }

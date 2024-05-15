@@ -15,13 +15,13 @@ class InfixExpression(private val token: Token, var left: Expression? = null) : 
         return "(${left.toString()} $operator ${right.toString()})"
     }
 
-    override fun eval(): MonkeyObject {
-        val leftEval = left?.eval() ?: MonkeyNull.NULL
+    override fun eval(env: Environment): MonkeyObject {
+        val leftEval = left?.eval(env) ?: MonkeyNull.NULL
         if (leftEval is MonkeyError) {
             return leftEval
         }
 
-        val rightEval = right?.eval() ?: MonkeyNull.NULL
+        val rightEval = right?.eval(env) ?: MonkeyNull.NULL
         if (rightEval is MonkeyError) {
             return rightEval
         }

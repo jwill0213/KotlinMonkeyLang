@@ -15,8 +15,8 @@ class PrefixExpression(private val token: Token) : Expression() {
         return "($operator${right.toString()})"
     }
 
-    override fun eval(): MonkeyObject {
-        val rightEval = right?.eval() ?: MonkeyNull.NULL
+    override fun eval(env: Environment): MonkeyObject {
+        val rightEval = right?.eval(env) ?: MonkeyNull.NULL
         if (rightEval is MonkeyError) {
             return rightEval
         }

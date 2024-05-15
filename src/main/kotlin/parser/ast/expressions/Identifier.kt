@@ -14,8 +14,8 @@ class Identifier(private val token: Token) : Expression() {
         return token.literal
     }
 
-    override fun eval(): MonkeyObject? {
-        val envVal = Environment.get(getTokenLiteral())
+    override fun eval(env: Environment): MonkeyObject? {
+        val envVal = env.get(getTokenLiteral())
 
         // envVal.second is false when identifier is unset
         if (!envVal.second) {

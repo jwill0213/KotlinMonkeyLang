@@ -24,15 +24,15 @@ class LetStatement(private val token: Token) : Statement() {
         return "${getTokenLiteral()} ${name.toString()} = ${value.toString()};"
     }
 
-    override fun eval(): MonkeyObject? {
-        val result = value?.eval() ?: MonkeyError("No expression for let statement")
+    override fun eval(env: Environment): MonkeyObject? {
+        val result = value?.eval(env) ?: MonkeyError("No expression for let statement")
         if (result is MonkeyError) {
             return result
         }
 
         // Add variable to the global environment
-        Environment.set(name.getTokenLiteral(), result)
+        env.set(name.getTokenLiteral(), result)
 
-        return super.eval()
+        return super.eval(env)
     }
 }

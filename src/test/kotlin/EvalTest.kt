@@ -139,30 +139,12 @@ class EvalTest {
     @Test
     fun test_errorHandling() {
         val tests = listOf(
-            Pair(
-                "5 + true;",
-                "type mismatch: INTEGER + BOOLEAN",
-            ),
-            Pair(
-                "5 + true; 5;",
-                "type mismatch: INTEGER + BOOLEAN",
-            ),
-            Pair(
-                "-true",
-                "unknown operator: -BOOLEAN",
-            ),
-            Pair(
-                "true + false;",
-                "unknown operator: BOOLEAN + BOOLEAN",
-            ),
-            Pair(
-                "5; true + false; 5",
-                "unknown operator: BOOLEAN + BOOLEAN",
-            ),
-            Pair(
-                "if (10 > 1) { true + false; }",
-                "unknown operator: BOOLEAN + BOOLEAN",
-            ),
+            Pair("5 + true;", "type mismatch: INTEGER + BOOLEAN"),
+            Pair("5 + true; 5;", "type mismatch: INTEGER + BOOLEAN"),
+            Pair("-true", "unknown operator: -BOOLEAN"),
+            Pair("true + false;", "unknown operator: BOOLEAN + BOOLEAN"),
+            Pair("5; true + false; 5", "unknown operator: BOOLEAN + BOOLEAN"),
+            Pair("if (10 > 1) { true + false; }", "unknown operator: BOOLEAN + BOOLEAN"),
             Pair(
                 """
                 if (10 > 1) {
@@ -175,6 +157,7 @@ class EvalTest {
                 """.trimIndent(),
                 "unknown operator: BOOLEAN + BOOLEAN",
             ),
+            Pair("foobar;", "identifier not found: foobar"),
         )
 
         for (testCase in tests) {
@@ -185,6 +168,22 @@ class EvalTest {
                 "Expected 'MonkeyError' but got '${evaluatedValue.javaClass.simpleName}'"
             )
             assertEquals(testCase.second, evaluatedValue.message)
+        }
+    }
+
+    @Test
+    fun test_letStatements() {
+        val tests = listOf(
+            Pair("let a = 5; a;", 5),
+            Pair("let a = 5 * 5; a;", 25),
+            Pair("let a = 5; let b = a; b;", 5),
+            Pair("let a = 5; let b = a; let c = a + b + 5; c;", 15)
+        )
+
+        for (testCase in tests) {
+            val evaluatedValue = evalProgramForTest(testCase.first)
+
+            assertIntegerObject(evaluatedValue, testCase.second)
         }
     }
 

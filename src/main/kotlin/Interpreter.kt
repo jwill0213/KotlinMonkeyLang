@@ -40,7 +40,6 @@ fun main() {
             }
         }
 
-        println()
         print(prompt)
         input = readln()
     }

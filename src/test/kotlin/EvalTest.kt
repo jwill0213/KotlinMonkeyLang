@@ -158,6 +158,7 @@ class EvalTest {
                 "unknown operator: BOOLEAN + BOOLEAN",
             ),
             Pair("foobar;", "identifier not found: foobar"),
+            Pair("\"Hello\" - \"World\"", "unknown operator: STRING - STRING")
         )
 
         for (testCase in tests) {
@@ -215,6 +216,27 @@ class EvalTest {
 
             assertIntegerObject(evaluatedValue, testCase.second)
         }
+    }
+
+    @Test
+    fun test_evalStringLiteral() {
+        val input = "\"Hello World!\";"
+
+        val evaluated = evalProgramForTest(input)
+        assertTrue(evaluated is MonkeyString)
+        assertEquals("Hello World!", evaluated.value)
+    }
+
+    @Test
+    fun test_evalStringConcat() {
+        val input = "\"Hello\" + \" \" +  \"World!\";"
+
+        val evaluated = evalProgramForTest(input)
+        assertTrue(
+            evaluated is MonkeyString,
+            "Expected 'MonkeyString' but got '${evaluated.javaClass.simpleName}'"
+        )
+        assertEquals("Hello World!", evaluated.value)
     }
 
     private fun evalProgramForTest(input: String): MonkeyObject {

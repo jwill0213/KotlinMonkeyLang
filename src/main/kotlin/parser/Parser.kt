@@ -17,6 +17,7 @@ class Parser(private val lexer: Lexer) {
     private val prefixParseFnMap = mapOf(
         Pair(TokenType.IDENT) { parseIdentifier() },
         Pair(TokenType.INT) { parseIntegerLiteral() },
+        Pair(TokenType.STRING) { parseStringLiteral() },
         Pair(TokenType.TRUE) { parseBoolean() },
         Pair(TokenType.FALSE) { parseBoolean() },
         Pair(TokenType.BANG) { parsePrefixExpression() },
@@ -178,6 +179,13 @@ class Parser(private val lexer: Lexer) {
      */
     private fun parseIntegerLiteral(): IntegerLiteral {
         return IntegerLiteral(currToken)
+    }
+
+    /**
+     * Create StringLiteral from current token
+     */
+    private fun parseStringLiteral(): StringLiteral {
+        return StringLiteral(currToken)
     }
 
     /**

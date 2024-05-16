@@ -47,6 +47,7 @@ class Lexer(private val input: String) {
             '/' -> tok = Token(TokenType.SLASH)
             '<' -> tok = Token(TokenType.LT)
             '>' -> tok = Token(TokenType.GT)
+            '"' -> tok = readString()
             null -> tok = Token(TokenType.EOF)
             else -> {
                 tok = if (ch!!.isLetter()) {
@@ -100,6 +101,16 @@ class Lexer(private val input: String) {
         }
 
         return Token(TokenType.INT, input.substring(numberStart, position))
+    }
+
+    private fun readString(): Token {
+        val stringStart = position + 1
+        readChar()
+        while (ch != '"' && ch != null) {
+            readChar()
+        }
+
+        return Token(TokenType.STRING, input.substring(stringStart, position))
     }
 
     private fun skipWhitespace() {

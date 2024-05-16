@@ -7,6 +7,7 @@ enum class TokenType(val token: String) {
     // Identifiers + literals
     IDENT("IDENT"),
     INT("INT"),
+    STRING("STRING"),
 
     // Operators
     ASSIGN("="),

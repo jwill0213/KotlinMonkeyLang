@@ -99,6 +99,26 @@ class ParserTest {
     }
 
     @Test
+    fun test_parseStringExpression() {
+        val input = "\"Hello World!\";"
+
+        val parser = Parser(Lexer(input))
+
+        val program = parser.parseProgram()
+        assertNoParserErrors(parser)
+        assertNotNull(program)
+
+        val statements = program.statements
+
+        assertEquals(1, statements.size, "Should be 1 statement")
+        assertTrue(statements[0] is ExpressionStatement)
+        val expStmt = statements[0] as ExpressionStatement
+        assertTrue(expStmt.expression is StringLiteral)
+        val strLit = expStmt.expression as StringLiteral
+        assertEquals("Hello World!", strLit.value)
+    }
+
+    @Test
     fun test_parseBooleanExpression() {
         val input = "true;false;"
 
@@ -310,9 +330,9 @@ class ParserTest {
         assertLiteralExpression(fnExpr.params[0], "x")
         assertLiteralExpression(fnExpr.params[1], "y")
 
-        assertEquals(1, fnExpr.body!!.statements.size, "Function body should have 1 statement")
+        assertEquals(1, fnExpr.body.statements.size, "Function body should have 1 statement")
 
-        val bodyStmt = fnExpr.body!!.statements[0]
+        val bodyStmt = fnExpr.body.statements[0]
         assertTrue(bodyStmt is ExpressionStatement)
         val expr = (bodyStmt as ExpressionStatement).expression
         assertNotNull(expr)
@@ -412,7 +432,7 @@ class ParserTest {
         assertTrue(statement is LetStatement)
         val letStatement: LetStatement = statement as LetStatement
         assertEquals(statement.getTokenLiteral(), "let")
-        assertEquals(letStatement.name?.getTokenLiteral(), name)
+        assertEquals(letStatement.name.getTokenLiteral(), name)
         assertLiteralExpression(letStatement.value, value)
     }
 

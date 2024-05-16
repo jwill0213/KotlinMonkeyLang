@@ -29,6 +29,7 @@ class InfixExpression(private val token: Token, var left: Expression? = null) : 
         return when {
             leftEval is MonkeyInt && rightEval is MonkeyInt -> evalIntInfixExpression(leftEval, rightEval)
             leftEval is MonkeyBool && rightEval is MonkeyBool -> evalBooleanInfixExpression(leftEval, rightEval)
+            leftEval is MonkeyString && rightEval is MonkeyString -> evalStringInfixExpression(leftEval, rightEval)
             leftEval.getType() != rightEval.getType() -> MonkeyError("type mismatch: ${leftEval.getType()} $operator ${rightEval.getType()}")
             else -> MonkeyError("unknown operator: ${leftEval.getType()} $operator ${rightEval.getType()}")
         }
@@ -52,6 +53,13 @@ class InfixExpression(private val token: Token, var left: Expression? = null) : 
         return when (operator) {
             "==" -> MonkeyBool.parseNativeBool(left.value == right.value)
             "!=" -> MonkeyBool.parseNativeBool(left.value != right.value)
+            else -> MonkeyError("unknown operator: ${left.getType()} $operator ${right.getType()}")
+        }
+    }
+
+    private fun evalStringInfixExpression(left: MonkeyString, right: MonkeyString): MonkeyObject {
+        return when (operator) {
+            "+" -> MonkeyString(left.value + right.value)
             else -> MonkeyError("unknown operator: ${left.getType()} $operator ${right.getType()}")
         }
     }

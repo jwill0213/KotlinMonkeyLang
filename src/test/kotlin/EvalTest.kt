@@ -187,10 +187,40 @@ class EvalTest {
         }
     }
 
+    @Test
+    fun test_functionObject() {
+        val test = "fn(x) { x + 2; };"
+
+        val evaluated = evalProgramForTest(test)
+
+        assertTrue(evaluated is MonkeyFunction)
+        assertEquals(1, evaluated.params.size)
+        assertEquals("x", evaluated.params[0].toString())
+        assertEquals("(x + 2)", evaluated.body.toString())
+    }
+
+    @Test
+    fun test_functionApplication() {
+        val tests = listOf(
+            Pair("let identity = fn(x) { x; }; identity(5);", 5),
+            Pair("let identity = fn(x) { return x; }; identity(5);", 5),
+            Pair("let double = fn(x) { x * 2; }; double(5);", 10),
+            Pair("let add = fn(x, y) { x + y; }; add(5, 5);", 10),
+            Pair("let add = fn(x, y) { x + y; }; add(5 + 5, add(5, 5));", 20),
+            Pair("fn(x) { x; }(5)", 5),
+        )
+
+        for (testCase in tests) {
+            val evaluatedValue = evalProgramForTest(testCase.first)
+
+            assertIntegerObject(evaluatedValue, testCase.second)
+        }
+    }
+
     private fun evalProgramForTest(input: String): MonkeyObject {
         val program = Parser(Lexer(input)).parseProgram()
         assertNotNull(program)
-        val evaluatedValue = program.eval()
+        val evaluatedValue = program.eval(Environment())
         assertNotNull(evaluatedValue)
         return evaluatedValue
     }

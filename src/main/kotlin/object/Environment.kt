@@ -3,11 +3,15 @@ package org.example.`object`
 /**
  * Static environment so it can be accessed throughout the code
  */
-class Environment {
+class Environment(private val enclosingEnv: Environment? = null) {
     private val objectMap: MutableMap<String, MonkeyObject> = mutableMapOf()
 
     fun get(name: String): Pair<MonkeyObject?, Boolean> {
-        val foundObj = objectMap[name]
+        var foundObj = objectMap[name]
+        // If object wasn't found, check the enclosing environment
+        if (foundObj == null && enclosingEnv != null) {
+            foundObj = enclosingEnv.get(name).first
+        }
         return Pair(foundObj, foundObj != null)
     }
 

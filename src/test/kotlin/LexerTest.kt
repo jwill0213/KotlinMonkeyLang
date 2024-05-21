@@ -177,7 +177,6 @@ class LexerTest {
         val lexer = Lexer(input)
 
         for (t in expectedTokens) {
-            println("TOKEN $t")
             assertEquals(t, lexer.nextToken())
         }
     }

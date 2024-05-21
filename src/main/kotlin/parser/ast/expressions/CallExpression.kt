@@ -34,22 +34,28 @@ class CallExpression(private val token: Token, val fn: Expression) : Expression(
             return argObjects[0]
         }
 
-        if (func !is MonkeyFunction) {
-            return MonkeyError("not a function: ${func?.getType()}")
+        when (func) {
+            is MonkeyFunction -> {
+                val funcEnv = Environment(env)
+
+                // Add all arguments to the environment
+                func.params.forEachIndexed { index, param -> funcEnv.set(param.getTokenLiteral(), argObjects[index]) }
+
+                // Evaluate the function
+                val functionReturn = func.body.eval(funcEnv)
+                // Unwrap a return value, so it doesn't stop execution of the parent code
+                return if (functionReturn is MonkeyReturn) {
+                    functionReturn.value
+                } else {
+                    functionReturn
+                }
+            }
+
+            is MonkeyBuiltin -> {
+                return func.func(argObjects)
+            }
+
+            else -> return MonkeyError("not a function: ${func?.getType()}")
         }
-
-        val funcEnv = Environment(env)
-
-        // Add all arguments to the environment
-        func.params.forEachIndexed { index, param -> funcEnv.set(param.getTokenLiteral(), argObjects[index]) }
-
-        // Evaluate the function
-        val functionReturn = func.body.eval(funcEnv)
-        // Unwrap a return value, so it doesn't stop execution of the parent code
-        if (functionReturn is MonkeyReturn) {
-            return functionReturn.value
-        }
-
-        return functionReturn
     }
 }

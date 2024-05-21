@@ -8,4 +8,8 @@ class MonkeyError(val message: String) : MonkeyObject {
     override fun inspect(): String {
         return "ERROR: $message"
     }
+
+    override fun toString(): String {
+        return "ERROR: $message"
+    }
 }

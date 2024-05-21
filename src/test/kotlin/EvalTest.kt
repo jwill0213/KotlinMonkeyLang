@@ -239,6 +239,29 @@ class EvalTest {
         assertEquals("Hello World!", evaluated.value)
     }
 
+    @Test
+    fun test_evalBuiltinFunctions() {
+        val tests = listOf(
+            Pair("len(\"\");", 0),
+            Pair("len(\"four\");", 4),
+            Pair("len(\"hello world\");", 11),
+            Pair("len(1);", "argument to 'len' not supported, got INTEGER"),
+            Pair("len(\"one\", \"two\");", "wrong number of arguments. got=2, want=1"),
+        )
+
+        for (testCase in tests) {
+            val evaluated = evalProgramForTest(testCase.first)
+
+            when (testCase.second) {
+                is Int -> assertIntegerObject(evaluated, testCase.second as Int)
+                is String -> {
+                    assertTrue(evaluated is MonkeyError, "should be error for string")
+                    assertEquals(testCase.second as String, evaluated.message)
+                }
+            }
+        }
+    }
+
     private fun evalProgramForTest(input: String): MonkeyObject {
         val program = Parser(Lexer(input)).parseProgram()
         assertNotNull(program)
@@ -249,7 +272,7 @@ class EvalTest {
 
     private fun assertIntegerObject(obj: MonkeyObject?, expected: Int) {
         assertNotNull(obj)
-        assertTrue(obj is MonkeyInt, "Expected 'MonkeyInt' but got '${obj.javaClass.simpleName}'")
+        assertTrue(obj is MonkeyInt, "Expected 'MonkeyInt' but got '${obj}'")
         assertEquals(expected, obj.value)
     }
 

@@ -22,6 +22,7 @@ fun main() {
 
     print(prompt)
     var input = readln()
+    val interpreterEnvironment = Environment()
     while (input != "exit") {
         val lexer = Lexer(input)
         val parser = Parser(lexer)
@@ -35,7 +36,7 @@ fun main() {
                 println("\t $e \n")
             }
         } else {
-            val evaluated = program.eval(Environment.globalEnv)
+            val evaluated = program.eval(interpreterEnvironment)
             if (evaluated != null) {
                 println(evaluated.inspect())
             }

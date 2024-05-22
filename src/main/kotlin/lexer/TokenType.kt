@@ -31,6 +31,8 @@ enum class TokenType(val token: String) {
     RPAREN(")"),
     LBRACE("{"),
     RBRACE("}"),
+    LBRACKET("["),
+    RBRACKET("]"),
 
     // Keywords
     FUNCTION("fn"),

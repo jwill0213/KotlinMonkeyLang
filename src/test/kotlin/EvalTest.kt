@@ -262,6 +262,45 @@ class EvalTest {
         }
     }
 
+    @Test
+    fun test_evalArrayLiteral() {
+        val test = "[1, 2 * 2, 3 + 3]"
+
+        val evaluated = evalProgramForTest(test)
+
+        assertTrue(evaluated is MonkeyArray)
+        assertEquals(3, evaluated.elements.size)
+        assertIntegerObject(evaluated.elements[0], 1)
+        assertIntegerObject(evaluated.elements[1], 4)
+        assertIntegerObject(evaluated.elements[2], 6)
+    }
+
+    @Test
+    fun test_arrayIndexExpression() {
+        val tests = listOf(
+            Pair("[1, 2, 3][0]", 1),
+            Pair("[1, 2, 3][1]", 2),
+            Pair("[1, 2, 3][2]", 3),
+            Pair("let i = 0; [1][i]", 1),
+            Pair("[1, 2, 3][1 + 1];", 3),
+            Pair("let myArray = [1, 2, 3]; myArray[2];", 3),
+            Pair("let myArray = [1, 2, 3]; myArray[0] + myArray[1] + myArray[2];", 6),
+            Pair("let myArray = [1, 2, 3]; let i = myArray[0]; myArray[i]", 2),
+            Pair("[1, 2, 3][3]", null),
+            Pair("[1, 2, 3][-1]", null),
+        )
+
+        for (testCase in tests) {
+            val evaluatedValue = evalProgramForTest(testCase.first)
+
+            if (testCase.second is Int) {
+                assertIntegerObject(evaluatedValue, testCase.second!!)
+            } else {
+                assertNullObject(evaluatedValue)
+            }
+        }
+    }
+
     private fun evalProgramForTest(input: String): MonkeyObject {
         val program = Parser(Lexer(input)).parseProgram()
         assertNotNull(program)

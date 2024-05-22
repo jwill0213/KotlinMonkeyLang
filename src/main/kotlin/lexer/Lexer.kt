@@ -34,6 +34,8 @@ class Lexer(private val input: String) {
             '+' -> tok = Token(TokenType.PLUS)
             '{' -> tok = Token(TokenType.LBRACE)
             '}' -> tok = Token(TokenType.RBRACE)
+            '[' -> tok = Token(TokenType.LBRACKET)
+            ']' -> tok = Token(TokenType.RBRACKET)
             '-' -> tok = Token(TokenType.MINUS)
             '!' -> {
                 tok = if (peekChar() == '=') {

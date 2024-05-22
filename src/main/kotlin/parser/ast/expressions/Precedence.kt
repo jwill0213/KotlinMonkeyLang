@@ -9,7 +9,8 @@ enum class Precedence(val rank: Int) {
     SUM(4),
     PRODUCT(5),
     PREFIX(6),
-    CALL(7);
+    CALL(7),
+    INDEX(8);
 
     companion object {
         fun findPrecedence(tokenType: TokenType): Precedence? {
@@ -23,6 +24,7 @@ enum class Precedence(val rank: Int) {
                 TokenType.SLASH -> PRODUCT
                 TokenType.ASTERISK -> PRODUCT
                 TokenType.LPAREN -> CALL
+                TokenType.LBRACKET -> INDEX
                 else -> null
             }
         }

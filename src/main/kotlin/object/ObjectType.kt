@@ -8,5 +8,6 @@ enum class ObjectType(val value: String) {
     ERROR("ERROR_OBJ"),
     FUNCTION("FUNCTION_OBJ"),
     BUILTIN("BUILTIN_OBJ"),
-    STRING("STRING_OBJ")
+    STRING("STRING_OBJ"),
+    ARRAY("ARRAY_OBJ")
 }

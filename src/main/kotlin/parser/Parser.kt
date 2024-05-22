@@ -25,6 +25,7 @@ class Parser(private val lexer: Lexer) {
         Pair(TokenType.LPAREN) { parseGroupedExpression() },
         Pair(TokenType.IF) { parseIfExpression() },
         Pair(TokenType.FUNCTION) { parseFunctionExpression() },
+        Pair(TokenType.LBRACKET) { parseArrayLiteral() },
     )
 
     // Map of token type to infix parse function
@@ -38,6 +39,7 @@ class Parser(private val lexer: Lexer) {
         Pair(TokenType.LT) { left: Expression -> parseInfixExpression(left) },
         Pair(TokenType.GT) { left: Expression -> parseInfixExpression(left) },
         Pair(TokenType.LPAREN) { function: Expression -> parseCallExpression(function) },
+        Pair(TokenType.LBRACKET) { function: Expression -> parseIndexExpression(function) },
     )
 
     // For init call nextToken twice to prime the parser where both tokens are set
@@ -222,57 +224,25 @@ class Parser(private val lexer: Lexer) {
         return expr
     }
 
-    /**
-     * Create InfixExpression and call parseExpression to recursively parse the right side of the infix expression
-     * passing in the current precedence
-     */
     private fun parseCallExpression(fn: Expression): CallExpression {
         val expr = CallExpression(currToken, fn)
 
-        expr.args = parseCallArguments()
+        expr.args = parseExpressionList(TokenType.RPAREN)
 
         return expr
     }
 
-    /**
-     * Parse comma separated list of parameters for a function.
-     */
-    private fun parseCallArguments(): List<Expression> {
-        val argList = mutableListOf<Expression>()
+    private fun parseIndexExpression(arr: Expression): Expression? {
+        val expr = IndexExpression(currToken, arr)
 
-        if (peekTokenIs(TokenType.RPAREN)) {
-            // No arguments. Advance tokens and return
-            nextToken()
-            return argList
-        }
-
-        // We are currently on LPAREN. Advance to next token
         nextToken()
-        // Parse the first argument
-        var argExpr = parseExpression(Precedence.LOWEST)
-        if (argExpr != null) {
-            argList.add(argExpr)
+        expr.index = parseExpression(Precedence.LOWEST)
+
+        if (!expectPeek(TokenType.RBRACKET)) {
+            return null
         }
 
-        // While the token after the expression is a comma, keep parsing expressions
-        while (peekTokenIs(TokenType.COMMA)) {
-            // Advance twice to skip the comma
-            nextToken()
-            nextToken()
-
-            // Parse expression and add it to the argList if not null
-            argExpr = parseExpression(Precedence.LOWEST)
-            if (argExpr != null) {
-                argList.add(argExpr)
-            }
-        }
-
-        // Next token should be the RPAREN at the end of the argument list
-        if (!expectPeek(TokenType.RPAREN)) {
-            return argList
-        }
-
-        return argList
+        return expr
     }
 
     /**
@@ -398,6 +368,59 @@ class Parser(private val lexer: Lexer) {
         }
 
         return paramList
+    }
+
+    /**
+     * Parse function expression in the form of `fn (<paramList>) <body>
+     */
+    private fun parseArrayLiteral(): ArrayLiteral {
+        // Current token should be FUNCTION.
+        val array = ArrayLiteral(currToken)
+
+        array.elements = parseExpressionList(TokenType.RBRACKET)
+
+        return array
+    }
+
+    /**
+     * Parse comma separated list of parameters for a function.
+     */
+    private fun parseExpressionList(endToken: TokenType): List<Expression> {
+        val argList = mutableListOf<Expression>()
+
+        if (peekTokenIs(endToken)) {
+            // No arguments. Advance tokens and return
+            nextToken()
+            return argList
+        }
+
+        // We are currently on LPAREN. Advance to next token
+        nextToken()
+        // Parse the first argument
+        var argExpr = parseExpression(Precedence.LOWEST)
+        if (argExpr != null) {
+            argList.add(argExpr)
+        }
+
+        // While the token after the expression is a comma, keep parsing expressions
+        while (peekTokenIs(TokenType.COMMA)) {
+            // Advance twice to skip the comma
+            nextToken()
+            nextToken()
+
+            // Parse expression and add it to the argList if not null
+            argExpr = parseExpression(Precedence.LOWEST)
+            if (argExpr != null) {
+                argList.add(argExpr)
+            }
+        }
+
+        // Next token should be the RPAREN at the end of the argument list
+        if (!expectPeek(endToken)) {
+            return argList
+        }
+
+        return argList
     }
 
     /**

@@ -235,6 +235,8 @@ class ParserTest {
             Pair("a + add(b * c) + d", "((a + add((b * c))) + d)"),
             Pair("add(a, b, 1, 2 * 3, 4 + 5, add(6, 7 * 8))", "add(a, b, 1, (2 * 3), (4 + 5), add(6, (7 * 8)))"),
             Pair("add(a + b + c * d / f + g)", "add((((a + b) + ((c * d) / f)) + g))"),
+            Pair("a * [1, 2, 3, 4][b * c] * d", "((a * ([1, 2, 3, 4][(b * c)])) * d)"),
+            Pair("add(a * b[2], b[1], 2 * [1, 2][1])", "add((a * (b[2])), (b[1]), (2 * ([1, 2][1])))"),
         )
 
         for (test in exprTests) {
@@ -428,6 +430,48 @@ class ParserTest {
         }
     }
 
+    @Test
+    fun test_parseArrayLiteral() {
+        val test = "[1, 2 * 2, 3 + 3]"
+
+        val parser = Parser(Lexer(test))
+        val program = parser.parseProgram()
+        assertNoParserErrors(parser)
+        assertNotNull(program)
+
+        val statements = program.statements
+
+        assertEquals(1, statements.size, "Should be 1 statement")
+        assertTrue(statements[0] is ExpressionStatement)
+        assertTrue((statements[0] as ExpressionStatement).expression is ArrayLiteral)
+        val arrayLiteral = (statements[0] as ExpressionStatement).expression as ArrayLiteral
+
+        assertEquals(3, arrayLiteral.elements.size)
+        assertIntegerLiteral(arrayLiteral.elements[0], 1)
+        assertInfixExpression(arrayLiteral.elements[1], 2, "*", 2)
+        assertInfixExpression(arrayLiteral.elements[2], 3, "+", 3)
+    }
+
+    @Test
+    fun test_parseIndexExpression() {
+        val test = "myArray[1 + 1]"
+
+        val parser = Parser(Lexer(test))
+        val program = parser.parseProgram()
+        assertNoParserErrors(parser)
+        assertNotNull(program)
+
+        val statements = program.statements
+
+        assertEquals(1, statements.size, "Should be 1 statement")
+        assertTrue(statements[0] is ExpressionStatement)
+        assertTrue((statements[0] as ExpressionStatement).expression is IndexExpression)
+        val indexExpr = (statements[0] as ExpressionStatement).expression as IndexExpression
+
+        assertIdentifier(indexExpr.arr, "myArray")
+        assertInfixExpression(indexExpr.index, 1, "+", 1)
+    }
+
     private fun assertLetStatement(statement: Statement, name: String, value: Any) {
         assertTrue(statement is LetStatement)
         val letStatement: LetStatement = statement as LetStatement
@@ -449,7 +493,7 @@ class ParserTest {
         }
     }
 
-    private fun assertInfixExpression(expr: Expression, left: Any, operator: String, right: Any) {
+    private fun assertInfixExpression(expr: Expression?, left: Any, operator: String, right: Any) {
         assertTrue(expr is InfixExpression)
         val infixExpression = expr as InfixExpression
 

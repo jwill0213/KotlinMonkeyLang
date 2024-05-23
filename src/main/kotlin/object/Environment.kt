@@ -29,18 +29,38 @@ class Environment(private val enclosingEnv: Environment? = null) {
         private fun checkLen(args: List<MonkeyObject>): MonkeyObject {
             if (args.size != 1) {
                 //error bad arguments
-                return MonkeyError("wrong number of arguments. got=${args.size}, want=1")
+                return MonkeyError("wrong number of arguments for len. got=${args.size}, want=1")
             }
 
-            val argument = args[0]
-            if (argument !is MonkeyString) {
-                //error wrong type
-                return MonkeyError("argument to 'len' not supported, got ${argument.getType()}")
+            return when (val arg = args[0]) {
+                is MonkeyString -> MonkeyInt(arg.value.length)
+                is MonkeyArray -> MonkeyInt(arg.elements.size)
+                else -> MonkeyError("argument to 'len' not supported, got ${arg.getType()}")
             }
-
-            return MonkeyInt(argument.value.length)
         }
 
-        private val builtinFunctions = mapOf(Pair("len", MonkeyBuiltin { args: List<MonkeyObject> -> checkLen(args) }))
+        private fun getFirst(args: List<MonkeyObject>): MonkeyObject {
+            if (args.size != 1) {
+                //error bad arguments
+                return MonkeyError("wrong number of arguments for first. got=${args.size}, want=1")
+            }
+
+            val arg = args[0]
+
+            if (arg !is MonkeyArray) {
+                return MonkeyError("argument to 'first' not supported, got ${arg.getType()}")
+            }
+
+            if (arg.elements.isNotEmpty()) {
+                return arg.elements[0]
+            }
+
+            return MonkeyNull.NULL
+        }
+
+        private val builtinFunctions = mapOf(
+            Pair("len", MonkeyBuiltin { args: List<MonkeyObject> -> checkLen(args) }),
+            Pair("first", MonkeyBuiltin { args: List<MonkeyObject> -> getFirst(args) })
+        )
     }
 }

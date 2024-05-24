@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
+import kotlin.test.fail
 
 class EvalTest {
 
@@ -246,7 +247,17 @@ class EvalTest {
             Pair("len(\"four\");", 4),
             Pair("len(\"hello world\");", 11),
             Pair("len(1);", "argument to 'len' not supported, got INTEGER"),
-            Pair("len(\"one\", \"two\");", "wrong number of arguments. got=2, want=1"),
+            Pair("len(\"one\", \"two\");", "wrong number of arguments for 'len'. got=2, want=1"),
+            Pair("len([]);", 0),
+            Pair("len([1]);", 1),
+            Pair("len([1, 2, 3, 4]);", 4),
+            Pair("len([1], [1, 2]);", "wrong number of arguments for 'len'. got=2, want=1"),
+            Pair("rest([1, 2, 3, 4, 5]);", listOf(2, 3, 4, 5)),
+            Pair("rest(rest(rest([1, 2, 3, 4, 5])));", listOf(4, 5)),
+            Pair("rest(rest(rest([1, 2, 3, 4, 5])));", listOf(4, 5)),
+            Pair("rest(rest(rest([1, 2, 3])));", null),
+            Pair("push([1, 2, 3, 4, 5]);", "wrong number of arguments for 'push'. got=1, want=2"),
+            Pair("push([1], 5);", listOf(1, 5)),
         )
 
         for (testCase in tests) {
@@ -254,6 +265,10 @@ class EvalTest {
 
             when (testCase.second) {
                 is Int -> assertIntegerObject(evaluated, testCase.second as Int)
+                is List<*> -> {
+                    assertTrue(evaluated is MonkeyArray)
+                    assertMonkeyObject(evaluated, testCase.second)
+                }
                 is String -> {
                     assertTrue(evaluated is MonkeyError, "should be error for string")
                     assertEquals(testCase.second as String, evaluated.message)
@@ -293,20 +308,42 @@ class EvalTest {
         for (testCase in tests) {
             val evaluatedValue = evalProgramForTest(testCase.first)
 
-            if (testCase.second is Int) {
-                assertIntegerObject(evaluatedValue, testCase.second!!)
-            } else {
-                assertNullObject(evaluatedValue)
-            }
+            assertMonkeyObject(evaluatedValue, testCase.second)
         }
     }
 
     private fun evalProgramForTest(input: String): MonkeyObject {
-        val program = Parser(Lexer(input)).parseProgram()
+        val parser = Parser(Lexer(input))
+        val program = parser.parseProgram()
         assertNotNull(program)
         val evaluatedValue = program.eval(Environment())
         assertNotNull(evaluatedValue)
         return evaluatedValue
+    }
+
+    private fun assertMonkeyObject(obj: MonkeyObject?, expected: Any?) {
+        assertNotNull(obj)
+        when (expected) {
+            is Int -> assertIntegerObject(obj, expected)
+            is Boolean -> assertBooleanObject(obj, expected)
+            is String -> assertStringObject(obj, expected)
+            is List<*> -> assertArrayObject(obj, expected)
+            else -> if (expected == null) assertNullObject(obj) else fail("Unexpected assert type")
+        }
+    }
+
+    private fun assertArrayObject(obj: MonkeyObject?, expected: List<*>) {
+        assertNotNull(obj)
+        assertTrue(obj is MonkeyArray, "Expected 'MonkeyArray' but got '${obj}'")
+        obj.elements.forEachIndexed { index, monkeyObj ->
+            expected[index]?.let { assertMonkeyObject(monkeyObj, it) }
+        }
+    }
+
+    private fun assertStringObject(obj: MonkeyObject?, expected: String) {
+        assertNotNull(obj)
+        assertTrue(obj is MonkeyString, "Expected 'MonkeyString' but got '${obj}'")
+        assertEquals(expected, obj.value)
     }
 
     private fun assertIntegerObject(obj: MonkeyObject?, expected: Int) {

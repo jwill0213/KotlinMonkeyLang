@@ -9,5 +9,10 @@ enum class ObjectType(val value: String) {
     FUNCTION("FUNCTION_OBJ"),
     BUILTIN("BUILTIN_OBJ"),
     STRING("STRING_OBJ"),
-    ARRAY("ARRAY_OBJ")
+    ARRAY("ARRAY_OBJ"),
+    HASH("HASH_OBJ");
+
+    fun isHashable(): Boolean {
+        return this == INTEGER || this == BOOLEAN || this == STRING
+    }
 }

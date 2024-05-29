@@ -3,6 +3,7 @@ import org.example.`object`.*
 import org.example.parser.Parser
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 import kotlin.test.fail
@@ -309,6 +310,56 @@ class EvalTest {
             val evaluatedValue = evalProgramForTest(testCase.first)
 
             assertMonkeyObject(evaluatedValue, testCase.second)
+        }
+    }
+
+    @Test
+    fun test_stringHashKey() {
+        val hello1 = MonkeyString("Hello World")
+        val hello2 = MonkeyString("Hello World")
+        val diff1 = MonkeyString("My name is johnny")
+        val diff2 = MonkeyString("My name is johnny")
+
+        assertEquals(hello1.hashCode(), hello2.hashCode())
+        assertEquals(diff1.hashCode(), diff2.hashCode())
+        assertNotEquals(hello1.hashCode(), diff1.hashCode())
+    }
+
+    @Test
+    fun test_hashLiteral() {
+        val input = """
+            let two = "two";
+            {
+                "one": 10 - 9,
+                two: 1 + 1,
+                "thr" + "ee": 6 / 2,
+                4: 4,
+                true: 5,
+                false: 6
+            }
+        """.trimIndent()
+
+        val evaluated = evalProgramForTest(input)
+
+        assertTrue(
+            evaluated is MonkeyHash,
+            "Expected 'MonkeyHash' but got '${evaluated.javaClass.simpleName}'"
+        )
+
+        val expected = mapOf(
+            Pair(MonkeyString("one").hashCode(), 1),
+            Pair(MonkeyString("two").hashCode(), 2),
+            Pair(MonkeyString("three").hashCode(), 3),
+            Pair(MonkeyInt(4).hashCode(), 4),
+            Pair(MonkeyBool.TRUE.hashCode(), 5),
+            Pair(MonkeyBool.FALSE.hashCode(), 6)
+        )
+
+        assertEquals(expected.size, evaluated.objMap.size)
+
+        for (expectedEntry in expected.entries) {
+            val retObj = evaluated.objMap[expectedEntry.key]
+            assertIntegerObject(retObj, expectedEntry.value)
         }
     }
 

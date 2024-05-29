@@ -50,6 +50,7 @@ class Lexer(private val input: String) {
             '<' -> tok = Token(TokenType.LT)
             '>' -> tok = Token(TokenType.GT)
             '"' -> tok = readString()
+            ':' -> tok = Token(TokenType.COLON)
             null -> tok = Token(TokenType.EOF)
             else -> {
                 tok = if (ch!!.isLetter()) {

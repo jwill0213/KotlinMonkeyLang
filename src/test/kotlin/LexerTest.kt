@@ -206,6 +206,7 @@ class LexerTest {
             "foobar";
             "foo bar";
             [1, 2];
+            {"foo": "bar"};
         """.trimIndent()
 
         val expectedTokens = listOf(
@@ -291,6 +292,12 @@ class LexerTest {
             Token(TokenType.COMMA),
             Token(TokenType.INT, "2"),
             Token(TokenType.RBRACKET),
+            Token(TokenType.SEMICOLON),
+            Token(TokenType.LBRACE),
+            Token(TokenType.STRING, "foo"),
+            Token(TokenType.COLON),
+            Token(TokenType.STRING, "bar"),
+            Token(TokenType.RBRACE),
             Token(TokenType.SEMICOLON),
             Token(TokenType.EOF),
         )

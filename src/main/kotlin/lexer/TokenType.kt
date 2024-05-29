@@ -26,6 +26,7 @@ enum class TokenType(val token: String) {
     // Delimiters
     COMMA(","),
     SEMICOLON(";"),
+    COLON(":"),
 
     LPAREN("("),
     RPAREN(")"),

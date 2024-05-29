@@ -6,7 +6,7 @@ import org.example.`object`.Environment
 import org.example.`object`.MonkeyBool
 import org.example.`object`.MonkeyObject
 
-class BoolExpression(private val token: Token) : Expression() {
+class BoolLiteral(private val token: Token) : Expression() {
     var value: Boolean = token.tokenType == TokenType.TRUE
 
     override fun getTokenLiteral(): String {

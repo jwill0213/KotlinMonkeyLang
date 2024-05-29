@@ -133,14 +133,14 @@ class ParserTest {
         assertEquals(2, statements.size, "Should be 2 statements")
         assertTrue(statements[0] is ExpressionStatement)
         var expStmt = statements[0] as ExpressionStatement
-        assertTrue(expStmt.expression is BoolExpression)
-        var boolExpr = expStmt.expression as BoolExpression
+        assertTrue(expStmt.expression is BoolLiteral)
+        var boolExpr = expStmt.expression as BoolLiteral
         assertBoolean(boolExpr, true)
 
         assertTrue(statements[1] is ExpressionStatement)
         expStmt = statements[1] as ExpressionStatement
-        assertTrue(expStmt.expression is BoolExpression)
-        boolExpr = expStmt.expression as BoolExpression
+        assertTrue(expStmt.expression is BoolLiteral)
+        boolExpr = expStmt.expression as BoolLiteral
         assertBoolean(boolExpr, false)
     }
 
@@ -472,6 +472,139 @@ class ParserTest {
         assertInfixExpression(indexExpr.index, 1, "+", 1)
     }
 
+    @Test
+    fun test_parseHashLiteralStringKey() {
+        val test = "{\"one\": 1, \"two\": 2, \"three\": 3}"
+
+        val parser = Parser(Lexer(test))
+        val program = parser.parseProgram()
+        assertNoParserErrors(parser)
+        assertNotNull(program)
+
+        val statements = program.statements
+
+        assertEquals(1, statements.size, "Should be 1 statement")
+        assertTrue(statements[0] is ExpressionStatement)
+        assertTrue((statements[0] as ExpressionStatement).expression is HashLiteral)
+        val hashLiteral = (statements[0] as ExpressionStatement).expression as HashLiteral
+
+        val expectedValues = mapOf(Pair("one", 1), Pair("two", 2), Pair("three", 3))
+
+        assertEquals(3, hashLiteral.expressionMap.size)
+
+        hashLiteral.expressionMap.forEach { entry ->
+            assertTrue(entry.key is StringLiteral)
+            val expectedVal = expectedValues[entry.key.toString()]
+
+            assertIntegerLiteral(entry.value, expectedVal!!)
+        }
+    }
+
+    @Test
+    fun test_parseHashLiteralIntKey() {
+        val test = "{1: 3, 2: 1, 3: 2}"
+
+        val parser = Parser(Lexer(test))
+        val program = parser.parseProgram()
+        assertNoParserErrors(parser)
+        assertNotNull(program)
+
+        val statements = program.statements
+
+        assertEquals(1, statements.size, "Should be 1 statement")
+        assertTrue(statements[0] is ExpressionStatement)
+        assertTrue((statements[0] as ExpressionStatement).expression is HashLiteral)
+        val hashLiteral = (statements[0] as ExpressionStatement).expression as HashLiteral
+
+        val expectedValues = mapOf(Pair(1, 3), Pair(2, 1), Pair(3, 2))
+
+        assertEquals(3, hashLiteral.expressionMap.size)
+
+        hashLiteral.expressionMap.forEach { entry ->
+            assertTrue(entry.key is IntegerLiteral)
+            val expectedVal = expectedValues[(entry.key as IntegerLiteral).value]
+
+            assertIntegerLiteral(entry.value, expectedVal!!)
+        }
+    }
+
+    @Test
+    fun test_parseHashLiteralBooleanKey() {
+        val test = "{true: \"false\", false: \"true\"}"
+
+        val parser = Parser(Lexer(test))
+        val program = parser.parseProgram()
+        assertNoParserErrors(parser)
+        assertNotNull(program)
+
+        val statements = program.statements
+
+        assertEquals(1, statements.size, "Should be 1 statement")
+        assertTrue(statements[0] is ExpressionStatement)
+        assertTrue((statements[0] as ExpressionStatement).expression is HashLiteral)
+        val hashLiteral = (statements[0] as ExpressionStatement).expression as HashLiteral
+
+        val expectedValues = mapOf(Pair(true, "false"), Pair(false, "true"))
+
+        assertEquals(2, hashLiteral.expressionMap.size)
+
+        hashLiteral.expressionMap.forEach { entry ->
+            assertTrue(entry.key is BoolLiteral)
+            val expectedVal = expectedValues[(entry.key as BoolLiteral).value]
+
+            assertTrue(entry.value is StringLiteral)
+            assertEquals(expectedVal, (entry.value as StringLiteral).value)
+        }
+    }
+
+    @Test
+    fun test_parseHashLiteralWithExpressions() {
+        val test = "{\"add\": 3 + 6, \"sub\": 10-7}"
+
+        val parser = Parser(Lexer(test))
+        val program = parser.parseProgram()
+        assertNoParserErrors(parser)
+        assertNotNull(program)
+
+        val statements = program.statements
+
+        assertEquals(1, statements.size, "Should be 1 statement")
+        assertTrue(statements[0] is ExpressionStatement)
+        assertTrue((statements[0] as ExpressionStatement).expression is HashLiteral)
+        val hashLiteral = (statements[0] as ExpressionStatement).expression as HashLiteral
+
+        assertEquals(2, hashLiteral.expressionMap.size)
+
+        hashLiteral.expressionMap.forEach { entry ->
+            assertTrue(entry.key is StringLiteral)
+
+            if ((entry.key as StringLiteral).value == "add") {
+                assertInfixExpression(entry.value, 3, "+", 6)
+            } else if ((entry.key as StringLiteral).value == "sub") {
+                assertInfixExpression(entry.value, 10, "-", 7)
+            }
+        }
+    }
+
+    @Test
+    fun test_parseEmptyHashLiteral() {
+        val test = "{}"
+
+        val parser = Parser(Lexer(test))
+        val program = parser.parseProgram()
+        assertNoParserErrors(parser)
+        assertNotNull(program)
+
+        val statements = program.statements
+
+        assertEquals(1, statements.size, "Should be 1 statement")
+        assertTrue(statements[0] is ExpressionStatement)
+        assertTrue((statements[0] as ExpressionStatement).expression is HashLiteral)
+        val hashLiteral = (statements[0] as ExpressionStatement).expression as HashLiteral
+
+        assertEquals(0, hashLiteral.expressionMap.size)
+    }
+
     private fun assertLetStatement(statement: Statement, name: String, value: Any) {
         assertTrue(statement is LetStatement)
         val letStatement: LetStatement = statement as LetStatement
@@ -528,8 +661,8 @@ class ParserTest {
     }
 
     private fun assertBoolean(expr: Expression?, value: Boolean) {
-        assertTrue(expr is BoolExpression)
-        val boolExpr = expr as BoolExpression
+        assertTrue(expr is BoolLiteral)
+        val boolExpr = expr as BoolLiteral
         assertEquals(value, boolExpr.value)
         assertEquals("$value", boolExpr.getTokenLiteral())
     }

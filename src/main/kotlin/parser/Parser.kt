@@ -26,6 +26,7 @@ class Parser(private val lexer: Lexer) {
         Pair(TokenType.IF) { parseIfExpression() },
         Pair(TokenType.FUNCTION) { parseFunctionExpression() },
         Pair(TokenType.LBRACKET) { parseArrayLiteral() },
+        Pair(TokenType.LBRACE) { parseHashLiteral() },
     )
 
     // Map of token type to infix parse function
@@ -193,8 +194,8 @@ class Parser(private val lexer: Lexer) {
     /**
      * Create BoolExpression from current token
      */
-    private fun parseBoolean(): BoolExpression {
-        return BoolExpression(currToken)
+    private fun parseBoolean(): BoolLiteral {
+        return BoolLiteral(currToken)
     }
 
     /**
@@ -380,6 +381,35 @@ class Parser(private val lexer: Lexer) {
         array.elements = parseExpressionList(TokenType.RBRACKET)
 
         return array
+    }
+
+    private fun parseHashLiteral(): HashLiteral? {
+        // Current token should be FUNCTION.
+        val hash = HashLiteral(currToken)
+
+        while (!peekTokenIs(TokenType.RBRACE)) {
+            nextToken()
+            val hashKey = parseExpression(Precedence.LOWEST)
+
+            if (!expectPeek(TokenType.COLON)) {
+                return null
+            }
+
+            nextToken()
+            val hashVal = parseExpression(Precedence.LOWEST)
+
+            hash.expressionMap[hashKey!!] = hashVal!!
+
+            if (!peekTokenIs(TokenType.RBRACE) && !expectPeek(TokenType.COMMA)) {
+                return null
+            }
+        }
+
+        if (!expectPeek(TokenType.RBRACE)) {
+            return null
+        }
+
+        return hash
     }
 
     /**

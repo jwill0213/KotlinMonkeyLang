@@ -3,7 +3,7 @@ package org.example.parser.ast.expressions
 import org.example.lexer.Token
 import org.example.`object`.*
 
-class IndexExpression(private val token: Token, val arr: Expression) : Expression() {
+class IndexExpression(private val token: Token, val left: Expression) : Expression() {
     var index: Expression? = null
 
     override fun getTokenLiteral(): String {
@@ -11,31 +11,47 @@ class IndexExpression(private val token: Token, val arr: Expression) : Expressio
     }
 
     override fun toString(): String {
-        return "($arr[$index])"
+        return "($left[$index])"
     }
 
     override fun eval(env: Environment): MonkeyObject {
-        val arrVal = arr.eval(env)
-        if (arrVal is MonkeyError) {
-            return arrVal
+        val leftObj = left.eval(env)
+        if (leftObj is MonkeyError) {
+            return leftObj
         }
 
-        val iVal = index?.eval(env)
-        if (iVal is MonkeyError) {
-            return iVal
+        val idxObj = index?.eval(env)
+        if (idxObj is MonkeyError) {
+            return idxObj
         }
 
-        if (arrVal !is MonkeyArray || iVal !is MonkeyInt) {
-            return MonkeyError("index operator not supported: ${arrVal?.getType()}")
+        return if (leftObj is MonkeyArray && idxObj is MonkeyInt) {
+            evalArrayIndexExpression(leftObj, idxObj)
+        } else if (leftObj is MonkeyHash) {
+            evalHashIndexExpression(leftObj, idxObj!!)
+        } else {
+            MonkeyError("index operator not supported: ${leftObj?.getType()}")
         }
+    }
 
-        val idx = iVal.value
-        val max = arrVal.elements.size - 1
+    private fun evalArrayIndexExpression(arr: MonkeyArray, index: MonkeyInt): MonkeyObject {
+        val idxVal = index.value
+        val max = arr.elements.size - 1
 
-        if (idx < 0 || idx > max) {
+        if (idxVal < 0 || idxVal > max) {
             return MonkeyNull.NULL
         }
 
-        return arrVal.elements[idx]
+        return arr.elements[idxVal]
+    }
+
+    private fun evalHashIndexExpression(hash: MonkeyHash, index: MonkeyObject): MonkeyObject {
+        if (!index.getType().isHashable()) {
+            return MonkeyError("unusable as hash key: ${index.getType()}")
+        }
+
+        val returnObj = hash.objMap[index.hashCode()] ?: return MonkeyNull.NULL
+
+        return returnObj
     }
 }

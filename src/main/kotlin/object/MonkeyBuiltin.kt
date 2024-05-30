@@ -75,5 +75,13 @@ class MonkeyBuiltin(val func: (List<MonkeyObject>) -> MonkeyObject) : MonkeyObje
 
             return MonkeyArray(listOf(*arg.elements.toTypedArray(), args[1]))
         }
+
+        fun put(args: List<MonkeyObject>): MonkeyObject {
+            for (arg in args) {
+                println(arg.inspect())
+            }
+
+            return MonkeyNull.NULL
+        }
     }
 }

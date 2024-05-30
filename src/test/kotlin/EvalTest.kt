@@ -160,7 +160,8 @@ class EvalTest {
                 "unknown operator: BOOLEAN + BOOLEAN",
             ),
             Pair("foobar;", "identifier not found: foobar"),
-            Pair("\"Hello\" - \"World\"", "unknown operator: STRING - STRING")
+            Pair("\"Hello\" - \"World\"", "unknown operator: STRING - STRING"),
+            Pair("{\"name\": \"Monkey\"}[fn(x) { x }];", "unusable as hash key: FUNCTION")
         )
 
         for (testCase in tests) {
@@ -360,6 +361,29 @@ class EvalTest {
         for (expectedEntry in expected.entries) {
             val retObj = evaluated.objMap[expectedEntry.key]
             assertIntegerObject(retObj, expectedEntry.value)
+        }
+    }
+
+    @Test
+    fun test_hashIndexExpression() {
+        val tests = listOf(
+            Pair("{\"foo\": 5, \"bar\": 16}[\"bar\"]", 16),
+            Pair("{\"foo\": 5}[\"bar\"]", null),
+            Pair("let key = \"foo\"; {\"foo\": 5}[key]", 5),
+            Pair("{}[\"foo\"]", null),
+            Pair("{5: 5}[5]", 5),
+            Pair("{true: 5}[true]", 5),
+            Pair("{false: 5, true: 8}[false]", 5)
+        )
+
+        for (testCase in tests) {
+            val evaluated = evalProgramForTest(testCase.first)
+
+            if (testCase.second is Int) {
+                assertIntegerObject(evaluated, testCase.second as Int)
+            } else {
+                assertNullObject(evaluated)
+            }
         }
     }
 

@@ -26,12 +26,12 @@ class Environment(private val enclosingEnv: Environment? = null) {
     }
 
     companion object {
-
         private val builtinFunctions = mapOf(
             Pair("len", MonkeyBuiltin { args: List<MonkeyObject> -> MonkeyBuiltin.checkLen(args) }),
             Pair("first", MonkeyBuiltin { args: List<MonkeyObject> -> MonkeyBuiltin.getFirst(args) }),
             Pair("rest", MonkeyBuiltin { args: List<MonkeyObject> -> MonkeyBuiltin.getRest(args) }),
-            Pair("push", MonkeyBuiltin { args: List<MonkeyObject> -> MonkeyBuiltin.push(args) })
+            Pair("push", MonkeyBuiltin { args: List<MonkeyObject> -> MonkeyBuiltin.push(args) }),
+            Pair("puts", MonkeyBuiltin { args: List<MonkeyObject> -> MonkeyBuiltin.put(args) })
         )
     }
 }

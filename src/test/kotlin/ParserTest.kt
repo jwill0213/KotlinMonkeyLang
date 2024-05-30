@@ -468,7 +468,7 @@ class ParserTest {
         assertTrue((statements[0] as ExpressionStatement).expression is IndexExpression)
         val indexExpr = (statements[0] as ExpressionStatement).expression as IndexExpression
 
-        assertIdentifier(indexExpr.arr, "myArray")
+        assertIdentifier(indexExpr.left, "myArray")
         assertInfixExpression(indexExpr.index, 1, "+", 1)
     }
 
